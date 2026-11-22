@@ -1,46 +1,53 @@
 import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 import { ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { Component, ViewChild } from '@angular/core';
+import {
+  FormsModule,
+} from '@angular/forms';
 import {
   DatabaseService,
   DatabaseConnection,
 } from 'src/app/services/database.service';
-import { AuthserviceProvider } from 'src/providers/authservice/authservice';
-import { IonContent, Platform } from '@ionic/angular';
-import { MenuController } from '@ionic/angular';
+import { DailyBibleVerseComponent } from '../components/daily-bible-verse/daily-bible-verse.component';
+import { DailyBibleQuoteComponent } from '../components/daily-bible-quote/daily-bible-quote.component';
+import { IonContent, Platform, IonicModule } from '@ionic/angular';
 import { IonLoaderService } from '../ion-loader.service';
 import { ScreenOrientationService } from '../services/screen-orientation.service';
 import { App } from '@capacitor/app';
 import { WakeLockService } from '../services/wake-lock.service';
-import { NetworkService } from '../services/network.service';
 import { Browser } from '@capacitor/browser';
 import { LoggerService } from '../services/logger.service';
 import { DarkModeService } from '../services/dark-mode.service';
 import { AudioFocusService } from '../services/audio-focus.service';
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { AudioPlaybackService } from '../core/services/audio-playback.service';
+import { ConnectivityService } from '../core/services/connectivity.service';
 import { AudioCacheService } from '../core/audio-cache.service';
+import { AuthserviceProvider } from 'src/providers/authservice/authservice';
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    IonicModule,
+    FormsModule,
+    DailyBibleVerseComponent,
+    DailyBibleQuoteComponent
+  ]
 })
 export class HomePage {
   @ViewChild(IonContent, { static: false }) content: IonContent;
   @ViewChild('audioPlayer') audio: any;
-  private lastConnectivityResult: boolean = false;
-  private lastConnectivityCheck: number = 0;
-  private connectivityCacheDuration: number = 30000; // 30 seconds
   public networkSubscription: any;
-  private networkStateChangeDebounceTime = 3000; // 3 seconds
-  private networkDebounceTimer: any = null;
-  private audioProgressIntervalId: any = null;
-  private lastReportedNetworkState: boolean | null = null;
 
   // Network quality states: excellent, good, fair, poor
   public connectionQuality: string = 'unknown';
+  public audioLoadInProgress: boolean = false;
+  public darkModeSubscription: any;
 
   public slideOpts = {
     initialSlide: 0,
@@ -50,60 +57,53 @@ export class HomePage {
     allowTouchMove: false,
   };
   public APIMessage: any = '';
-  public todayDate: any = '';
   public database: DatabaseConnection;
   public unread: any = 0;
   public todayTabSelected: any = 'today';
   public notificationsTabSelected: any = '';
   public tabRowitemSelected: any = '0';
   public orientation: any;
-  public isNetworkAvailable: any = 0;
   public notificationsHomeCount: any;
+
   public selectedAudioSource: any = '';
-  public currentAudioIndex: any = 0;
-  public audioPlaying: any;
-  public playAll: any = false;
   public playAllText: any = 'Play All';
   public notificationUpdateIndex: any = 0;
   public appversionText: any = '';
   public resumeListener: any;
   public pauseListener: any;
-  public repeat_state_all: any = 0;
-  public repeat_played_count_all: any = 0;
+
+
   public showNetworkOrAPIErrorMessage: any = 0;
   public todayAudioFiles: any[] = [];
   public isAudioLoading: boolean = true;
   public audioLoadError: boolean = false;
-  public hasInternetConnection: boolean = true;
   public errorStateTimer: any = null;
   public stableErrorDetected: boolean = false;
-  private isActivelyTesting: boolean = false;
-  private _skipNetworkCheck: boolean = false;
-  private audioLoadInProgress: boolean = false;
   public get isServerError(): boolean {
     return this.APIMessage === this.authservice.serverDownMessage;
   }
   public segmentSelected: string = '0';
   public isDarkMode: boolean = false;
-  private darkModeSubscription: any;
+  public audioProgressIntervalId: any = null;
   constructor(
     private http: HttpClient,
-    public network: NetworkService,
+    public connectivityService: ConnectivityService,
+
     private wakeLockService: WakeLockService,
     private screenorientation: ScreenOrientationService,
     private ionLoaderService: IonLoaderService,
-    public menuCtrl: MenuController,
     private authservice: AuthserviceProvider,
     private platform: Platform,
     private databaseService: DatabaseService,
     private logger: LoggerService,
     private darkModeService: DarkModeService,
     private audioFocusService: AudioFocusService,
+    private audioPlaybackService: AudioPlaybackService,
     private audioCacheService: AudioCacheService
   ) {
     this.errorStateTimer = null;
     this.stableErrorDetected = false;
-    this.todayDate = Date.now();
+
     this.getAppVersionInfo();
 
     this.audioFocusService.registerOwner('home', () => {
@@ -128,16 +128,24 @@ export class HomePage {
           .catch((error) => {
             this.logger.error('Failed to load audio bibles:', error);
           });
+        // Load audio immediately after platform is ready, if tab is active
+        setTimeout(() => {
+          if (this.tabRowitemSelected === '0') {
+            this.loadAudioDirectly();
+          }
+        }, 500);
+
         this.resumeListener = this.platform.resume.subscribe(() => {
           this.notificationUpdateIndex = 0;
           this.logger.network('App resumed - checking active connectivity');
-          this.testActiveConnectivity().then((isConnected) => {
+          this.connectivityService.checkNetwork({ loadAudio: true }).then((isConnected) => {
+
             if (isConnected) {
               this.logger.network(
                 'Active connectivity test passed - loading content'
               );
               this.setStableErrorState(false, '');
-              if (!this.audioPlaying) {
+              if (!this.audioPlaybackService.audioPlaying) {
                 if (this.audioLoadError) {
                   this.loadAudioDirectly();
                 }
@@ -182,29 +190,29 @@ export class HomePage {
           .then((db: DatabaseConnection) => {
             this.database = db;
             this.audioProgressIntervalId = setInterval(() => {
-              if (this.audioPlaying) {
+              if (this.audioPlaybackService.audioPlaying) {
                 const activeAudioArray = this.todayAudioFiles;
                 if (
                   activeAudioArray &&
                   activeAudioArray.length > 0 &&
-                  this.currentAudioIndex < activeAudioArray.length
+                  this.audioPlaybackService.currentAudioIndex < activeAudioArray.length
                 ) {
                   // Fix #1: Removed unreliable time-based threshold check (duration - 0.5)
                   // The native 'ended' event listener is the primary signal for audio completion
                   // Polling now only handles progress tracking, not endpoint detection
-                    activeAudioArray[this.currentAudioIndex].ctime = parseInt(
+                    activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctime = parseInt(
                       this.audio.nativeElement.currentTime.toString()
                     );
-                    activeAudioArray[this.currentAudioIndex].ctimeintime =
-                      this.convertHMS(
+                    activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctimeintime =
+                      this.audioCacheService.convertHMS(
                         parseInt(
                           this.audio.nativeElement.currentTime.toString()
                         )
                       );
-                    activeAudioArray[this.currentAudioIndex].durationintime =
-                      this.convertHMS(
+                    activeAudioArray[this.audioPlaybackService.currentAudioIndex].durationintime =
+                      this.audioCacheService.convertHMS(
                         parseInt(
-                          activeAudioArray[this.currentAudioIndex].duration
+                          activeAudioArray[this.audioPlaybackService.currentAudioIndex].duration
                         ) -
                           parseInt(
                             this.audio.nativeElement.currentTime.toString()
@@ -228,38 +236,26 @@ export class HomePage {
     this.isAudioLoading = false;
     this.audioLoadError = true;
     this.audioLoadInProgress = false;
-    const connectionType = this.network.connectionType;
-    if (connectionType !== 'none' && connectionType !== 'unknown') {
-      this.setStableErrorState(true, this.authservice.serverDownMessage);
-      this.logger.log('Setting server error flag for audio loading');
-    } else {
-      this.setStableErrorState(true, this.authservice.noNetWorkMessage);
-    }
-    this.logger.log('Falling back to database audio loading');
+
+    const isNoNet = this.connectivityService.connectionType === 'none' ||
+                     this.connectivityService.connectionType === 'unknown';
+
+    const errorMsg = isNoNet ? this.authservice.noNetWorkMessage : this.authservice.serverDownMessage;
+
+    this.setStableErrorState(true, errorMsg);
+    this.logger.log(isNoNet ? 'Falling back to database audio loading' : 'Setting server error flag for audio loading');
   }
   playAllAudiosDirect() {
-    if (this.playAll) {
-      this.playAll = false;
-      this.audio.nativeElement.pause();
-      this.audioPlaying = false;
+    if (this.audioPlaybackService.playAll) {
+      this.audioPlaybackService.setPlayAll(false);
+      this.audioPlaybackService.setAudioPlaying(false);
       this.playAllText = 'Play All';
-      this.stopAllAudioDirect();
-      // Wake lock is released in stopAllAudioDirect
+      this.audioPlaybackService.stopAllAudioDirect(this.audio?.nativeElement, this.todayAudioFiles);
     } else {
-      for (var i = 0; i < this.todayAudioFiles.length; i++) {
-        this.todayAudioFiles[i].repeat_state = 0;
-        this.todayAudioFiles[i].repeat_played_count = 0;
-        this.todayAudioFiles[i].state = 'pause';
-        this.todayAudioFiles[i].ctime = 0;
-        this.todayAudioFiles[i].ctimeintime = '0:00';
-        this.todayAudioFiles[i].durationintime = this.convertHMS(
-          parseInt(this.todayAudioFiles[i].duration)
-        );
-      }
-      this.playAll = true;
-      this.currentAudioIndex = 0;
-      this.repeat_played_count_all = 0;
-      this.startAudioDirect(0);
+      this.audioPlaybackService.setPlayAll(true);
+      this.audioPlaybackService.setCurrentAudioIndex(0);
+      this.audioPlaybackService.setRepeatPlayedCountAll(0);
+      this.audioPlaybackService.playAllAudiosDirect(this.audio?.nativeElement, this.todayAudioFiles);
       this.playAllText = 'Stop Playing';
       this.wakeLockService.keepAwake().then(
         () => {},
@@ -268,27 +264,9 @@ export class HomePage {
     }
   }
   stopAllAudioDirect() {
-    for (var i = 0; i < this.todayAudioFiles.length; i++) {
-      this.todayAudioFiles[i].repeat_state = 0;
-      this.todayAudioFiles[i].repeat_played_count = 0;
-      this.todayAudioFiles[i].state = 'pause';
-      this.todayAudioFiles[i].ctime = 0;
-      this.todayAudioFiles[i].ctimeintime = '0:00';
-      this.todayAudioFiles[i].durationintime = this.convertHMS(
-        this.todayAudioFiles[i].duration
-      );
-    }
-    this.playAll = false;
-    this.currentAudioIndex = 0;
+    this.audioPlaybackService.stopAllAudioDirect(this.audio?.nativeElement, this.todayAudioFiles);
+    this.audioPlaybackService.setPlayAll(false);
     this.playAllText = 'Play All';
-    this.audio.nativeElement.pause();
-    this.audioPlaying = false;
-    this.audioFocusService.releaseFocus('home');
-    // Release wake lock when stopping all audio
-    this.wakeLockService
-      .allowSleepAgain()
-      .then(() => this.logger.log('Wake lock released'))
-      .catch(() => this.logger.log('Wake lock release failed'));
   }
 
   private clearPerItemRepeatStates(exceptIndex: number = -1) {
@@ -305,36 +283,11 @@ export class HomePage {
   }
 
   setRepeatStateDirect(i, repeat_state) {
-    this.stopAudioDirect(this.currentAudioIndex);
-    const currentRepeatState =
-      Number(this.todayAudioFiles[i].repeat_state) || 0;
-    const nextRepeatState =
-      currentRepeatState >= 3 ? 0 : currentRepeatState + 1;
-
-    // Only one repeat can be active at a time across daily audio.
-    this.repeat_state_all = 0;
-    this.repeat_played_count_all = 0;
-    this.clearPerItemRepeatStates(i);
-    this.todayAudioFiles[i].repeat_state = nextRepeatState;
+    this.audioPlaybackService.setRepeatStateDirect(i, repeat_state, this.audio?.nativeElement, this.todayAudioFiles);
   }
 
   private stopHomeAudioPlayback(): void {
-    const audioElement = this.audio?.nativeElement;
-    if (audioElement) {
-      audioElement.pause();
-      audioElement.currentTime = 0;
-    }
-
-    this.audioPlaying = false;
-    this.playAll = false;
-    this.playAllText = 'Play All';
-    this.audioFocusService.releaseFocus('home');
-
-    if (Array.isArray(this.todayAudioFiles)) {
-      this.todayAudioFiles.forEach((item) => {
-        item.state = 'pause';
-      });
-    }
+    this.audioPlaybackService.stopAudioDirect(this.audioPlaybackService.currentAudioIndex, this.audio?.nativeElement, this.todayAudioFiles);
   }
 
   async openURLWeb(url: string) {
@@ -363,7 +316,8 @@ export class HomePage {
     this.logger.log('tabRowitemSelected:', this.tabRowitemSelected);
   }
   ionViewWillEnter() {
-    this.menuCtrl.enable(false);
+    // Menu disabled by default in this app
+
     setTimeout(() => {
       const rowTabElement = document.querySelector(
         '.row-tab-home'
@@ -396,11 +350,7 @@ export class HomePage {
       this.loadAudioDirectly();
     }
 
-    this.testConnectionOnStartup().then((isConnected) => {
-      this.logger.network(
-        'Comprehensive connectivity check result:',
-        isConnected
-      );
+    this.connectivityService.checkNetwork({ loadAudio: true }).then((isConnected) => {
       if (isConnected) {
         this.logger.network(
           'Active internet connection confirmed - initializing page'
@@ -409,9 +359,7 @@ export class HomePage {
         localStorage.removeItem('todayAudioCache');
         localStorage.removeItem('todayAudioCacheDate');
         this.logger.log('Cleared audio cache - will fetch fresh data from API');
-        this.isNetworkAvailable = '1';
-        this.hasInternetConnection = true;
-        this.setStableErrorState(false, '');
+
         if (this.isTodayTabActive()) {
           this.loadAudioDirectly();
         }
@@ -450,19 +398,23 @@ export class HomePage {
     this.segmentSelected = event.detail.value;
     this.selectRowTaIte(parseInt(this.segmentSelected).toString());
   }
-  selectRowTaIte(tabitem) {
+  async selectRowTaIte(tabitem: any) {
     this.tabRowitemSelected = tabitem;
     this.segmentSelected = tabitem.toString();
     if (tabitem.toString() === '0') {
       this.todayTabSelected = 'today';
       this.notificationsTabSelected = '';
-      this.checkNetworkForAudio();
+      this.connectivityService.checkNetwork({ loadAudio: true }).then((isConnected) => {
+        if (isConnected) {
+          this.loadAudioDirectly();
+        }
+      });
     } else if (tabitem.toString() === '1') {
       this.unread = 0;
       this.notificationsTabSelected = 'notifications';
       this.todayTabSelected = '';
       this.showNetworkOrAPIErrorMessage = 0;
-      if (this.network && this.network.hasInternetConnectivity) {
+      if (this.connectivityService.lastConnectivityResult) {
         this.logger.log('Misc tab selected - ensuring content visibility');
       }
     } else if (tabitem.toString() === '2') {
@@ -470,23 +422,6 @@ export class HomePage {
       this.todayTabSelected = '';
       this.showNetworkOrAPIErrorMessage = 0;
     }
-  }
-  convertHMS(value) {
-    const sec = parseInt(value, 10);
-    var hours: any = Math.floor(sec / 3600);
-    var minutes: any = Math.floor((sec - hours * 3600) / 60);
-    var seconds: any = sec - hours * 3600 - minutes * 60;
-    if (hours < 10) {
-      hours = '0' + hours;
-    }
-    if (minutes < 10) {
-      minutes = minutes;
-    }
-    if (seconds < 10) {
-      seconds = '0' + seconds;
-    }
-    if (hours == '00') return minutes + ':' + seconds;
-    else return hours + ':' + minutes + ':' + seconds;
   }
   ngOnDestroy() {
     this.audioFocusService.releaseFocus('home');
@@ -509,214 +444,47 @@ export class HomePage {
       this.audioProgressIntervalId = null;
     }
   }
-  padLeadingZeros(num: number, size: number): string {
-    let s = num + '';
-    while (s.length < size) s = '0' + s;
-    return s;
+  // Template binding for repeat state all
+  get repeat_state_all(): string {
+    return String(this.audioPlaybackService.repeatStateAll);
   }
+
   setRepeatStateAll() {
-    this.repeat_state_all = (Number(this.repeat_state_all) || 0) + 1;
-    if (this.repeat_state_all > 3) this.repeat_state_all = 0;
-    this.repeat_played_count_all = 0;
+    this.audioPlaybackService.repeatStateAll = (Number(this.audioPlaybackService.repeatStateAll) || 0) + 1;
+    if (this.audioPlaybackService.repeatStateAll > 3) this.audioPlaybackService.repeatStateAll = 0;
+    this.audioPlaybackService.repeatPlayedCountAll = 0;
 
     // Enforce exclusive repeat selection: repeat-all clears per-item repeats.
     this.clearPerItemRepeatStates();
 
-    this.logger.log(`Repeat all set to ${this.repeat_state_all}`);
+    this.logger.log(`Repeat all set to ${this.audioPlaybackService.repeatStateAll}`);
   }
   init_loadNotifications(flag) {
     if (flag == 1) this.ionLoaderService.simpleLoader('Please wait...');
-    let type = this.network.connectionType;
-    if (type == 'unknown' || type == 'none' || type == undefined) {
-      this.isNetworkAvailable = 0;
+
+    const isNoNet = this.connectivityService.connectionType === 'none' ||
+                     this.connectivityService.connectionType === 'unknown';
+
+    if (isNoNet) {
       this.APIMessage = this.authservice.noNetWorkMessage;
       this.showNetworkOrAPIErrorMessage = 1;
     } else {
-      this.isNetworkAvailable = '1';
     }
+
     this.ionLoaderService.dismissLoader();
   }
-  playAudioDirect(idx, caption, state) {
-    var tempdta;
-    this.wakeLockService.keepAwake().then(
-      () => (tempdta = ''),
-      () => this.logger.error('error')
-    );
-    this.playAll = false;
-    this.playAllText = 'Play All';
-    this.startAudioDirect(idx);
-    localStorage.setItem(
-      `audio_played_${this.todayAudioFiles[idx].id}`,
-      'true'
-    );
-  }
-  async startAudioDirect(idx) {
-    this.audioFocusService.requestFocus('home');
-
-    this.currentAudioIndex = idx;
-    for (var i = 0; i < this.todayAudioFiles.length; i++) {
-      this.todayAudioFiles[i].state = 'pause';
-    }
-    this.todayAudioFiles[idx].state = 'play';
-    this.wakeLockService
-      .keepAwake()
-      .then(() => this.logger.log('Wake lock acquired for audio playback'))
-      .catch(() => this.logger.log('Wake lock acquisition failed'));
-    const audioElement = this.audio?.nativeElement;
-    if (!audioElement) {
-      this.logger.error('Audio element is not available');
-      return;
-    }
-
-    this.selectedAudioSource = this.todayAudioFiles[idx].url;
-    audioElement.preload = 'auto';
-    audioElement.src = this.todayAudioFiles[idx].url;
-    audioElement.load();
-
-    // Wait until the browser has buffered enough data to play without stopping.
-    const canPlay = new Promise<void>((resolve) => {
-      const onCanPlay = () => {
-        audioElement.removeEventListener('canplaythrough', onCanPlay);
-        resolve();
-      };
-      audioElement.addEventListener('canplaythrough', onCanPlay, { once: true });
-    });
-
-    // Fallback timeout so we don't block indefinitely if the event never fires.
-    const readyTimeout = new Promise<void>((resolve) =>
-      setTimeout(resolve, 2000)
-    );
-
-    await Promise.race([canPlay, readyTimeout]);
-
-    // Also capture duration from metadata even if canplaythrough fires first.
-    audioElement.onloadedmetadata = () => {
-      const actualDuration = audioElement.duration;
-      this.todayAudioFiles[idx].duration = actualDuration;
-      this.todayAudioFiles[idx].durationintime = this.convertHMS(
-        Math.floor(actualDuration)
-      );
-    };
-
-    audioElement.currentTime = this.todayAudioFiles[idx].ctime;
-    try {
-      await audioElement.play();
-    } catch (error: any) {
-      this.logger.error('Error starting audio playback:', error);
-    }
-    this.audioPlaying = true;
-    // Reset wake lock activity timer on audio play
-    this.wakeLockService.resetActivity();
-    audioElement.onended = () => {
-      this.handleAudioEnded();
-    };
-  }
-  async handleAudioEnded() {
-    // Fix #2: Validate that playback actually completed before advancing track
-    const audio = this.audio.nativeElement;
-    const isBufferedComplete = audio.buffered && audio.buffered.length > 0;
-    const bufferedEnd = isBufferedComplete ? audio.buffered.end(audio.buffered.length - 1) : null;
-    const currentPos = audio.currentTime;
-
-    // Only advance track if: buffer is complete OR we're at the end of natural content
-    // (buffering ended naturally, not cut short by network issues)
-    const shouldAdvance =
-      !isBufferedComplete || // No buffered data - likely ended normally
-      (bufferedEnd === currentPos && bufferedEnd < audio.duration); // Buffered to actual end
-
-    if (!shouldAdvance) {
-      this.logger.warn(
-        'Audio ended but may not have completed playback fully. Buffer state: ' +
-          `currentTime=${currentPos}, bufferedEnd=${bufferedEnd}, duration=${audio.duration}`
-      );
-      // Re-trigger playback from current position if buffering was incomplete
-      try {
-        await audio.play();
-        this.logger.log('Replaying audio due to incomplete buffer');
-      } catch (error: any) {
-        this.logger.error('Error replaying audio:', error);
-      }
-      return; // Don't advance track
-    }
-
-    const activeAudioArray = this.todayAudioFiles;
-    activeAudioArray[this.currentAudioIndex].ctime = 0;
-    activeAudioArray[this.currentAudioIndex].ctimeintime = '0:00';
-    activeAudioArray[this.currentAudioIndex].durationintime = this.convertHMS(
-      parseInt(activeAudioArray[this.currentAudioIndex].duration)
-    );
-    if (this.playAll) {
-      if (this.currentAudioIndex < activeAudioArray.length - 1) {
-        this.logger.log(`Moving to next track: ${this.currentAudioIndex + 1}`);
-        this.currentAudioIndex++;
-        this.startAudioDirect(this.currentAudioIndex);
-      } else {
-        this.logger.log(
-          `End of playlist reached. Repeat count: ${this.repeat_played_count_all}/${this.repeat_state_all}`
-        );
-        if (
-          this.repeat_state_all > 0 &&
-          this.repeat_played_count_all < this.repeat_state_all
-        ) {
-          this.repeat_played_count_all++;
-          this.logger.log(`Starting repeat ${this.repeat_played_count_all}`);
-          this.currentAudioIndex = 0;
-          this.startAudioDirect(0);
-        } else {
-          this.stopAudioDirect(this.currentAudioIndex);
-          this.playAll = false;
-          this.playAllText = 'Play All';
-          this.repeat_played_count_all = 0;
-        }
-      }
-    } else if (activeAudioArray[this.currentAudioIndex].repeat_state > 0) {
-      if (
-        activeAudioArray[this.currentAudioIndex].repeat_played_count <
-        activeAudioArray[this.currentAudioIndex].repeat_state
-      ) {
-        activeAudioArray[this.currentAudioIndex].repeat_played_count++;
-        this.audio.nativeElement.currentTime = 0;
-        try {
-          await this.audio.nativeElement.play();
-        } catch (error: any) {
-          this.logger.error('Error replaying audio:', error);
-        }
-        // Re-acquire wake lock and reset inactivity timer for per-item repeat
-        await this.wakeLockService.keepAwake();
-        this.wakeLockService.resetActivity();
-      } else {
-        this.stopAudioDirect(this.currentAudioIndex);
-        activeAudioArray[this.currentAudioIndex].repeat_state = 0;
-        activeAudioArray[this.currentAudioIndex].repeat_played_count = 0;
-      }
-    } else {
-      this.stopAudioDirect(this.currentAudioIndex);
-    }
-  }
-  stopAudioDirect(idx) {
-    this.todayAudioFiles[idx].state = 'pause';
-    this.audio.nativeElement.pause();
-    this.audioPlaying = false;
-    this.playAll = false;
-    this.playAllText = 'Play All';
-    this.audioFocusService.releaseFocus('home');
-    this.wakeLockService
-      .allowSleepAgain()
-      .then(() => this.logger.log('Wake lock released'))
-      .catch(() => this.logger.log('Wake lock release failed'));
-  }
-  async onChangePlayTimeDirect(idx, obj) {
-    if (!this.playAll && this.audioPlaying) {
-      if (idx != this.currentAudioIndex) {
+      async onChangePlayTimeDirect(idx: number, obj: any) {
+    if (!this.audioPlaybackService.playAll && this.audioPlaybackService.audioPlaying) {
+      if (idx != this.audioPlaybackService.currentAudioIndex) {
         this.todayAudioFiles[idx].ctime = obj.currentTarget.value;
-        this.todayAudioFiles[idx].ctimeintime = this.convertHMS(
+        this.todayAudioFiles[idx].ctimeintime = this.audioCacheService.convertHMS(
           obj.currentTarget.value
         );
-        this.todayAudioFiles[idx].durationintime = this.convertHMS(
+        this.todayAudioFiles[idx].durationintime = this.audioCacheService.convertHMS(
           parseInt(this.todayAudioFiles[idx].duration) -
             parseInt(obj.currentTarget.value)
         );
-        this.startAudioDirect(idx);
+        this.audioPlaybackService.startAudioDirect(idx, this.audio?.nativeElement, this.todayAudioFiles);
       } else {
         this.audio.nativeElement.currentTime = obj.currentTarget.value;
         try {
@@ -729,8 +497,7 @@ export class HomePage {
   }
   async openExternalURLDirectly(url: string, title: string, urlplace?: string) {
     if (url != '') {
-      const connectionType = this.network.connectionType;
-      if (connectionType === 'none' || connectionType === 'unknown') {
+      if (this.connectivityService.connectionType === 'none' || this.connectivityService.connectionType === 'unknown') {
         this.authservice.showAlert('', '', this.authservice.noNetWorkMessage);
         return;
       }
@@ -762,7 +529,7 @@ export class HomePage {
     }
     if (isError) {
       const isServerErr =
-        this.network.hasInternetConnectivity &&
+        this.connectivityService.lastConnectivityResult &&
         message !== this.authservice.noNetWorkMessage;
       if (isServerErr || message === this.authservice.noNetWorkMessage) {
         this.APIMessage = message;
@@ -795,230 +562,52 @@ export class HomePage {
   setupNetworkListeners() {
     this.logger.network('Setting up network listeners in HomePage');
 
-    // Initial connectivity state
-    this.hasInternetConnection = this.network.isConnected;
-    this.isNetworkAvailable = this.network.isConnected ? '1' : '0';
-    this.lastReportedNetworkState = this.network.isConnected;
-
     // Single network subscription with debouncing
-    this.networkSubscription = this.network.actualConnectivity$.subscribe(
-      (hasConnectivity) => {
+    this.networkSubscription = this.connectivityService.subscribeToNetwork((isConnected) => {
         this.logger.network(
-          'Raw network state change detected:',
-          hasConnectivity
+          'Stable network change detected to:',
+          isConnected
         );
 
-        // Don't respond to rapid fluctuations - use debouncing
-        if (this.networkDebounceTimer) {
-          clearTimeout(this.networkDebounceTimer);
-        }
+        if (isConnected) {
+          this.logger.network('Stable network connectivity established');
+          // Reset error state when network returns
+          this.setStableErrorState(false, '');
 
-        this.networkDebounceTimer = setTimeout(() => {
-          // Only process if the state is different from last reported state
-          if (this.lastReportedNetworkState !== hasConnectivity) {
-            this.logger.network(
-              'Stable network change detected to:',
-              hasConnectivity
-            );
-            this.lastReportedNetworkState = hasConnectivity;
-
-            // Update network state properties
-            this.hasInternetConnection = hasConnectivity;
-            this.isNetworkAvailable = hasConnectivity ? '1' : '0';
-
-            if (hasConnectivity) {
-              this.logger.network('Stable network connectivity established');
-              this.setStableErrorState(false, '');
-
-              // Load audio if needed
-              if (
-                this.isTodayTabActive() &&
-                (this.audioLoadError || !this.todayAudioFiles?.length)
-              ) {
-                this.logger.network('Network restored - loading audio content');
-                this.loadAudioDirectly();
-              }
-
-              // Reload notifications after a delay
-              setTimeout(() => {
-                this.init_loadNotifications(0);
-              }, 1000);
-            } else {
-              this.logger.network('Stable network connectivity lost');
-              if (this.isTodayTabActive()) {
-                this.setStableErrorState(
-                  true,
-                  this.authservice.noNetWorkMessage
-                );
-              }
-
-              // Try loading from cache if on audio tab
-              if (this.isTodayTabActive()) {
-                this.isAudioLoading = false;
-                this.audioLoadError = true;
-                this.tryLoadFromCache();
-              }
-            }
+          // Load audio if needed
+          if (this.isTodayTabActive() && (this.audioLoadError || !this.todayAudioFiles?.length)) {
+            this.logger.network('Network restored - loading audio content');
+            this.loadAudioDirectly();
           }
-        }, this.networkStateChangeDebounceTime);
-      }
-    );
+
+          // Reload notifications after a delay
+          setTimeout(() => {
+            this.init_loadNotifications(0);
+          }, 1000);
+        } else {
+          this.logger.network('Stable network connectivity lost');
+          if (this.isTodayTabActive()) {
+            this.setStableErrorState(
+              true,
+              this.authservice.noNetWorkMessage
+            );
+          }
+
+          // Try loading from cache if on audio tab (await not needed in non-async context)
+          if (this.isTodayTabActive()) {
+            this.isAudioLoading = false;
+            this.audioLoadError = true;
+            this.tryLoadFromCache();
+          }
+        }
+      });
   }
 
   private isTodayTabActive(): boolean {
-    return this.tabRowitemSelected?.toString() === '0';
-  }
-  checkNetwork(
-    options: {
-      source?: string;
-      priority?: boolean;
-      loadAudio?: boolean;
-      showLoader?: boolean;
-      timeout?: number;
-    } = {}
-  ): Promise<boolean> {
-    // Set defaults
-    const {
-      source = 'general',
-      priority = false,
-      loadAudio = false,
-      showLoader = false,
-      timeout = 10000,
-    } = options;
-
-    this.logger.network(
-      `Network check (${source}${priority ? ', priority' : ''})`
-    );
-
-    // Check if we can use cached result
-    const now = Date.now();
-    if (
-      !priority &&
-      now - this.lastConnectivityCheck < this.connectivityCacheDuration
-    ) {
-      this.logger.network(
-        `Using cached connectivity result (${
-          now - this.lastConnectivityCheck
-        }ms old): ${this.lastConnectivityResult}`
-      );
-
-      // Still trigger appropriate actions based on cached result
-      if (loadAudio) {
-        this.handleNetworkResult(this.lastConnectivityResult, loadAudio);
-      }
-
-      return Promise.resolve(this.lastConnectivityResult);
-    }
-
-    // Prevent multiple simultaneous checks
-    if (this.isActivelyTesting && !priority) {
-      this.logger.network(
-        `Network check already in progress (${source}) - using cached state`
-      );
-      return Promise.resolve(this.network.isConnected);
-    }
-
-    // Skip if explicitly configured to do so (for testing)
-    if (this._skipNetworkCheck) {
-      this.logger.network(
-        `Network check skipped per configuration (${source})`
-      );
-      return Promise.resolve(true);
-    }
-
-    // Show loader if requested
-    if (showLoader) {
-      this.ionLoaderService.simpleLoader('Checking connection...');
-    }
-
-    this.isActivelyTesting = true;
-
-    // Basic check - if device reports no connection, don't bother with full check
-    if (!this.network.isConnected) {
-      this.logger.network(`Device reports disconnected (${source})`);
-      this.handleNetworkResult(false, loadAudio);
-      this.isActivelyTesting = false;
-      if (showLoader) this.ionLoaderService.dismissLoader();
-
-      // Update cached result
-      this.lastConnectivityCheck = now;
-      this.lastConnectivityResult = false;
-
-      return Promise.resolve(false);
-    }
-
-    // Track timeout ID for proper cleanup
-    let timeoutId: any = null;
-
-    // Set up timeout
-    const timeoutPromise = new Promise<boolean>((resolve) => {
-      timeoutId = setTimeout(() => {
-        if (this.isActivelyTesting) {
-          this.logger.network(`Network check timed out (${source})`);
-
-          // Update cached result for timeouts
-          this.lastConnectivityCheck = Date.now();
-          this.lastConnectivityResult = false;
-
-          resolve(false);
-        }
-      }, timeout);
-    });
-
-    // Perform actual connectivity check
-    const checkPromise = this.network
-      .forceConnectivityCheck()
-      .then((isConnected) => {
-        this.logger.network(`Network check result (${source}): ${isConnected}`);
-
-        // Update cached result
-        this.lastConnectivityCheck = Date.now();
-        this.lastConnectivityResult = isConnected;
-
-        return isConnected;
-      })
-      .catch((error) => {
-        this.logger.error(`Network check error (${source}):`, error);
-
-        // Update cached result for errors
-        this.lastConnectivityCheck = Date.now();
-        this.lastConnectivityResult = false;
-
-        return false;
-      });
-
-    // Race between timeout and actual check
-    return Promise.race([checkPromise, timeoutPromise]).then((isConnected) => {
-      // Clear timeout if it was created
-      if (timeoutId) clearTimeout(timeoutId);
-
-      this.isActivelyTesting = false;
-      if (showLoader) this.ionLoaderService.dismissLoader();
-      this.handleNetworkResult(isConnected, loadAudio);
-      return isConnected;
-    });
+    return this.tabRowitemSelected === '0';
   }
 
-  testConnectionOnStartup(): Promise<boolean> {
-    return this.checkNetwork({
-      source: 'startup',
-      priority: true,
-    });
-  }
 
-  checkNetworkForAudio(): Promise<boolean> {
-    return this.checkNetwork({
-      source: 'audio',
-      loadAudio: true,
-    });
-  }
-
-  testActiveConnectivity(): Promise<boolean> {
-    return this.checkNetwork({
-      source: 'resume',
-      priority: true,
-    });
-  }
   async tryLoadFromCache(): Promise<boolean> {
     this.logger.log('Attempting to load audio from cache...');
 
@@ -1035,18 +624,37 @@ export class HomePage {
     if (cachedAudio) {
       this.logger.log('Found audio from Capacitor filesystem cache');
 
-      // Reconstruct audio data from cached files
+      // Use actual data from localStorage that was saved with API response
+      const cachedData = JSON.parse(localStorage.getItem('todayAudioCache') || '{}');
+      const rawAudioData = cachedData.content?.audio || [];
+
+      // Reconstruct audio data from cached files using per-item URLs from original API response
       const todayAudioFiles: any[] = [];
       for (let i = 0; i < this.authservice.audio_bibles?.length || 0; i++) {
-        const type = ['bible', 'prayer', 'quote'][i] as string;
-        // Use the cached audio file URL directly from filesystem
+        let type = 'bible';
+        let title = 'Psalms';
+        let url = '';
+
+        // Use per-item data from original API if available, otherwise use cached URL
+        if (rawAudioData[i]) {
+          const item = rawAudioData[i];
+          title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+          type = ['bible', 'prayer', 'quote'][i] as string;
+          url = item.url || cachedAudio.url;
+        } else {
+          // Fall back to single cached URL for all items (older cache format)
+          title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+          type = ['bible', 'prayer', 'quote'][i] as string;
+          url = cachedAudio.url;
+        }
+
         todayAudioFiles.push({
           id: `${type}_${dateStr}_${i}`,
           type: type,
-          subtitle: `${type} - Today`,
-          url: cachedAudio.url,
-          duration: 0, // Will be populated when audio metadata loads
-          durationintime: '0:00',
+          subtitle: title + ' - Today',
+          url: url,
+          duration: rawAudioData[i]?.duration || 0,
+          durationintime: rawAudioData[i] ? this.audioCacheService.convertHMS(rawAudioData[i].duration) : '0:00',
           state: 'pause',
           ctime: 0,
           ctimeintime: '0:00',
@@ -1057,10 +665,11 @@ export class HomePage {
 
       this.todayAudioFiles = todayAudioFiles;
       this.notificationsHomeCount = this.todayAudioFiles.length;
+      // ✅ FIX: Use error=false since cache load was successful (offline mode)
       this.isAudioLoading = false;
-      this.audioLoadError = true;
+      this.audioLoadError = false;
       this.setStableErrorState(
-        true,
+        false,
         'Using cached data from filesystem - no internet connection'
       );
       return true;
@@ -1103,7 +712,53 @@ export class HomePage {
       try {
         this.logger.log('Found valid cached audio data for today in localStorage');
         if (data.audio && Array.isArray(data.audio)) {
-          this.processNewAudioData(data, dateStr);
+          // ✅ Convert raw cache data to the expected array format for UI with correct titles
+          const todayAudioFiles: any[] = [];
+          for (let i = 0; i < data.audio.length; i++) {
+            let type = 'bible';
+            let title = 'Psalms';
+
+            // Map type to display title
+            if (data.audio[i]) {
+              const audioItem = data.audio[i];
+              type = ['bible', 'prayer', 'quote'][i] as string;
+              title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+              todayAudioFiles.push({
+                id: `${type}_${dateStr}_${i}`,
+                type: type,
+                subtitle: title + ' - Today',
+                url: audioItem?.url || '',
+                duration: audioItem?.duration || 0,
+                durationintime: audioItem ? this.audioCacheService.convertHMS(audioItem.duration) : '0:00',
+                state: 'pause',
+                ctime: 0,
+                ctimeintime: '0:00',
+                repeat_state: 0,
+                repeat_played_count: 0,
+              });
+            } else {
+              // Fallback for missing item in array
+              todayAudioFiles.push({
+                id: `${type}_${dateStr}_${i}`,
+                type: type,
+                subtitle: title + ' - Today',
+                url: '',
+                duration: 0,
+                durationintime: '0:00',
+                state: 'pause',
+                ctime: 0,
+                ctimeintime: '0:00',
+                repeat_state: 0,
+                repeat_played_count: 0,
+              });
+            }
+          }
+          this.todayAudioFiles = todayAudioFiles;
+          this.notificationsHomeCount = this.todayAudioFiles.length;
+          // ✅ CRITICAL FIX: Reset loading flags when cache loads successfully
+          this.isAudioLoading = false;
+          this.audioLoadError = false;
+          this.audioCacheService.processData(data);
           this.setStableErrorState(
             true,
             'Using cached data from localStorage - no internet connection'
@@ -1166,11 +821,45 @@ export class HomePage {
       (data: any) => {
         clearTimeout(audioLoadTimeout);
         this.audioLoadInProgress = false;
+        // ✅ CRITICAL FIX: Reset loading flags on success
+        this.isAudioLoading = false;
+        this.audioLoadError = false;
         this.logger.log('Received audio data from API');
         try {
           const cacheEntry = { content: data, cacheDate: dateStr };
           localStorage.setItem('todayAudioCache', JSON.stringify(cacheEntry));
-          this.processNewAudioData(data, dateStr);
+          // ✅ Convert raw API data to the expected array format for UI with correct titles
+          const todayAudioFiles: any[] = [];
+          if (data.audio && Array.isArray(data.audio)) {
+            for (let i = 0; i < Math.min(Math.max(data.audio.length, this.authservice.audio_bibles?.length || 0), 3); i++) {
+              let type = 'bible';
+              let title = 'Psalms';
+
+              // Map type to display title
+              const item = data.audio[i];
+              if (item) {
+                type = ['bible', 'prayer', 'quote'][i] as string;
+                title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+              }
+
+              todayAudioFiles.push({
+                id: `${type}_${dateStr}_${i}`,
+                type: type,
+                subtitle: title + ' - Today',
+                url: item?.url || '',
+                duration: item?.duration || 0,
+                durationintime: item ? this.audioCacheService.convertHMS(item.duration) : '0:00',
+                state: 'pause',
+                ctime: 0,
+                ctimeintime: '0:00',
+                repeat_state: 0,
+                repeat_played_count: 0,
+              });
+            }
+          }
+          this.todayAudioFiles = todayAudioFiles;
+          this.notificationsHomeCount = this.todayAudioFiles.length;
+          this.audioCacheService.processData(data);
           this.setStableErrorState(false, '');
         } catch (error) {
           this.logger.error('Error processing API response:', error);
@@ -1204,7 +893,38 @@ export class HomePage {
               try {
                 const cacheEntry = { content: retryData, cacheDate: dateStr };
                 localStorage.setItem('todayAudioCache', JSON.stringify(cacheEntry));
-                this.processNewAudioData(retryData, dateStr);
+                // ✅ Convert raw API data to the expected array format for UI with correct titles
+                const todayAudioFiles: any[] = [];
+                if (retryData.audio && Array.isArray(retryData.audio)) {
+                  for (let i = 0; i < Math.min(Math.max(retryData.audio.length, this.authservice.audio_bibles?.length || 0), 3); i++) {
+                    let type = 'bible';
+                    let title = 'Psalms';
+
+                    // Map type to display title
+                    const item = retryData.audio[i];
+                    if (item) {
+                      type = ['bible', 'prayer', 'quote'][i] as string;
+                      title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+                    }
+
+                    todayAudioFiles.push({
+                      id: `${type}_${dateStr}_${i}`,
+                      type: type,
+                      subtitle: title + ' - Today',
+                      url: item?.url || '',
+                      duration: item?.duration || 0,
+                      durationintime: item ? this.audioCacheService.convertHMS(item.duration) : '0:00',
+                      state: 'pause',
+                      ctime: 0,
+                      ctimeintime: '0:00',
+                      repeat_state: 0,
+                      repeat_played_count: 0,
+                    });
+                  }
+                }
+                this.todayAudioFiles = todayAudioFiles;
+                this.notificationsHomeCount = this.todayAudioFiles.length;
+                this.audioCacheService.processData(retryData);
                 this.setStableErrorState(false, '');
               } catch (retryError) {
                 this.logger.error('Error processing API response on retry:', retryError);
@@ -1225,82 +945,5 @@ export class HomePage {
       }
     );
   }
-  processNewAudioData(data, dateStr) {
-    this.logger.log(`Processing new API audio data for date: ${dateStr}`);
-    try {
-      const todaysAudio = [];
-      if (data.audio && Array.isArray(data.audio)) {
-        this.logger.log(`Found ${data.audio.length} audio items from new API`);
-        data.audio.forEach((item, index) => {
-          this.logger.log(`Processing ${item.type} audio for today`);
-          // Skip items with invalid URLs to prevent silent playback failures
-          const url = item.url || '';
-          if (!url || typeof url !== 'string' || !url.trim()) {
-            this.logger.warn(`Skipping audio item ${index} (${item.type}) - invalid URL`);
-            return;
-          }
-          todaysAudio.push({
-            id: item.type + '_' + dateStr + '_' + index,
-            type: item.type,
-            subtitle: item.type + ' - ' + item.formattedDuration,
-            url: url,
-            duration: parseInt(item.duration || '0'),
-            durationintime:
-              item.formattedDuration ||
-              this.convertHMS(parseInt(item.duration || '0')),
-            state: 'pause',
-            ctime: 0,
-            ctimeintime: '0:00',
-            repeat_state: 0,
-            repeat_played_count: 0,
-          });
-        });
-        if (todaysAudio.length > 0) {
-          this.todayAudioFiles = todaysAudio;
-          this.notificationsHomeCount = this.todayAudioFiles.length;
-          this.isAudioLoading = false;
-          this.audioLoadError = false;
-          this.logger.log(
-            `Successfully loaded ${todaysAudio.length} audio files from new API`
-          );
-        } else {
-          this.logger.log('No audio items found in API response');
-          this.handleLoadingError('No audio found for today');
-        }
-      } else {
-        this.logger.log('Invalid API response format');
-        this.handleLoadingError('Invalid API response');
-      }
-    } catch (error) {
-      this.logger.error('Error processing new API data:', error);
-      this.handleLoadingError('API processing error');
-    }
-  }
 
-  private handleNetworkResult(isConnected: boolean, loadAudio: boolean): void {
-    // Update app state based on connectivity
-    if (isConnected) {
-      this.isNetworkAvailable = '1';
-      this.hasInternetConnection = true;
-      this.setStableErrorState(false, '');
-
-      // Load audio if requested and needed
-      if (loadAudio && (this.audioLoadError || !this.todayAudioFiles?.length)) {
-        this.logger.network('Network available - loading audio content');
-        this.loadAudioDirectly();
-      }
-    } else {
-      this.isNetworkAvailable = '0';
-      this.hasInternetConnection = false;
-      this.APIMessage = this.authservice.noNetWorkMessage;
-      this.setStableErrorState(true, this.authservice.noNetWorkMessage);
-
-      // Try loading from cache if audio was requested
-      if (loadAudio) {
-        this.isAudioLoading = false;
-        this.audioLoadError = true;
-        this.tryLoadFromCache();
-      }
-    }
-  }
 }

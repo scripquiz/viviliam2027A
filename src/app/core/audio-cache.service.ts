@@ -525,33 +525,22 @@ export class AudioCacheService {
   /**
    * Validate that all cached items are accessible
    */
-  async validateAllCachedItems(): Promise<{ valid: boolean; invalidKeys: string[] }> {
-    const metadata = await this.loadMetadata();
-    const invalidKeys: string[] = [];
 
-    for (const [key, info] of Object.entries(metadata.cachedItems)) {
-      try {
-        // Check if file exists using stat
-        const fileInfo = await Filesystem.stat({ path: info.path });
-
-        if (!fileInfo || fileInfo.size === 0) {
-          // File doesn't exist locally
-          invalidKeys.push(key);
-        } else if (info.etag && fileInfo.mtime) {
-          // File exists but may have changed on server
-          const mtime = new Date(fileInfo.mtime).getTime() / 1000;
-          if (Date.now() - mtime > this.MIN_BUFFER_TIME_MS) {
-            invalidKeys.push(key);
-          }
-        }
-      } catch (error) {
-        invalidKeys.push(key);
-      }
+  /**
+   * Process raw audio data into a structured format for the UI
+   */
+  public processData(rawData: any): any {
+    const processed = { ...rawData };
+    if (processed.duration) {
+      processed.durationintime = this.convertHMS(Math.floor(processed.duration));
     }
+    return processed;
+  }
 
-    return {
-      valid: invalidKeys.length === 0,
-      invalidKeys,
-    };
+  public convertHMS(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 }

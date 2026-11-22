@@ -130,7 +130,7 @@
                   [style.opacity]="repeat_state_all === '0' ? '0.5' : '1'"
                   (click)="setRepeatStateAll()"
                 ></ion-icon>
-                @if (repeat_state_all !== '0' && repeat_state_all > 0) {
+                @if (repeat_state_all !== '0' && (+repeat_state_all) > 0) {
                 <span class="repeat-badge audio-repeat-badge">
                   {{repeat_state_all}}
                 </span>
