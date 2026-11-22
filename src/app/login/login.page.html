@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <button (click)="navBack()" class="backicon"> <ion-icon style="font-size:24px;" name="arrow-back-outline"></ion-icon></button>
+    </ion-buttons>
+    <ion-title>Sign in</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content >
+  <div style="width:100%; text-align: center;margin-top: 25px;">
+  <img src="../../assets/images/header-logo.png" class="signup-logo">
+</div>
+  <swiper-container pagination ="true" [loop]="true" [speed]="1000" [autoplay]="{enable:false,delay:7000}" [options]="slideOpts" >  
+    <swiper-slide>  
+      <p class="slide-text">Read, Search and Compare Bibles</p>  
+    </swiper-slide>  
+    <swiper-slide>  
+      <p class="slide-text">Add Bookmarks, Highlights & Notes</p>  
+    </swiper-slide>  
+    <swiper-slide>  
+      <p class="slide-text">Take part in Opinion Polls & Surveys</p>  
+    </swiper-slide>  
+    <swiper-slide>  
+      <p class="slide-text">Participate in Weekly Bible Quiz</p>  
+    </swiper-slide>  
+    <swiper-slide>  
+      <p class="slide-text">Participate in Bible related competitions</p>  
+    </swiper-slide> 
+  </swiper-container>
+  <div style="padding:20px;">
+    <ion-item lines="full"  style="border-bottom: 1px solid #bababa;">
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="text" [(ngModel)]="email" required></ion-input>
+    </ion-item>
+    <ion-item lines="full" style="border-bottom: 1px solid #bababa;">
+      <ion-label position="floating">Password</ion-label>
+      <ion-input type="password" [(ngModel)]="password" [type]="passwordType" required></ion-input>
+      <ion-icon item-end [name]="passwordIcon" class="passwordIcon" (click)='hideShowPassword()'></ion-icon>
+    </ion-item>
+    <ion-row>
+      <ion-col style="text-align: center;">
+        <button type="submit" class="btn-signin" (click)="validateLogin()" >Sign in</button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col  style="text-align: center;">
+        <a [routerLink]="['/forgot-password']" class="small-text " style="margin-top: 20px;display:inline-block;" >Forgot Password?</a>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col  style="text-align: center;">
+        Don't have an account? <a [routerLink]="['/signup']" class="small-text"  style="margin-top: 10px;display:inline-block;" >Sign up</a>
+      </ion-col>
+    </ion-row>
+
+  </div>
+</ion-content>

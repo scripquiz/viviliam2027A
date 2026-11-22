@@ -1,0 +1,65 @@
+.backicon {
+  background-color: #fff;
+}
+
+/* Dark mode for back icon */
+body.dark-theme .backicon {
+  background-color: #2d2d2d !important;
+}
+
+body.dark-theme .backicon ion-icon {
+  color: #e0e0e0 !important;
+}
+
+.button-save {
+  background-color: #e8e8e8;
+  height: 32px;
+  padding-right: 12px;
+  padding-left: 12px;
+  width: calc(100% - 20px);
+  margin: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.notes-content {
+  width: 100%;
+  padding: 15px;
+  // Add top padding to make room for the header
+  padding-top: 65px; // Adjust this value based on your header height
+}
+
+// Add this to ensure content is properly placed
+ion-content {
+  --padding-top: var(--ion-safe-area-top, 0);
+  --padding-bottom: var(--ion-safe-area-bottom, 0);
+}
+
+body.dark-theme app-addnotes ion-content {
+  --background: #1a1a1a !important;
+  --color: #e0e0e0 !important;
+}
+
+body.dark-theme app-addnotes .notes-content {
+  background-color: #1a1a1a !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-theme app-addnotes .button-save {
+  background-color: #3a3a3a !important;
+  color: #ffffff !important;
+  border: 1px solid #666 !important;
+}
+
+body.dark-theme app-addnotes .vers,
+body.dark-theme app-addnotes span {
+  color: #e0e0e0 !important;
+}
+
+body.dark-theme app-addnotes .notes-textbox {
+  --background: #2d2d2d !important;
+  --color: #e0e0e0 !important;
+  --placeholder-color: #a0a0a0 !important;
+  border: 1px solid #444 !important;
+  border-radius: 8px;
+}

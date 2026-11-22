@@ -1,0 +1,36 @@
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+        Dedicated config for the audio/API server.
+        Trusts both the Android system CA store AND the bundled root CA
+        so that SSL renewals with the same CA provider never break older
+        Android versions (11-13) whose system store may lack newer root CAs.
+        Place the root CA file at: res/raw/viviliam_ca.cer
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.viviliam.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/viviliam_ca" />
+        </trust-anchors>
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">viviliam.com</domain>
+        <domain includeSubdomains="true">churchslide.com</domain>
+        <domain includeSubdomains="true">vvlm.in</domain>
+        <domain includeSubdomains="true">scripquiz.com</domain>
+        <domain includeSubdomains="true">viviliam.in</domain>
+        <domain includeSubdomains="true">viviliam.org</domain>
+        <domain includeSubdomains="true">play.google.com</domain>
+        <domain includeSubdomains="true">google.com</domain>
+        <domain includeSubdomains="true">cloudflare.com</domain>
+        <domain includeSubdomains="true">httpbin.org</domain>
+    </domain-config>
+</network-security-config>

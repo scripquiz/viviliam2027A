@@ -1,0 +1,117 @@
+.backicon {
+    background-color: #fff;
+}
+
+.topics-list-wrap {
+    padding: 12px;
+}
+
+.controls-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.language-segment {
+    flex: 0 0 48%;
+    --background: #edf3f8;
+}
+
+.language-segment ion-segment-button {
+    min-height: 34px;
+    font-size: 13px;
+}
+
+.scope-select {
+    flex: 1;
+    --padding-start: 10px;
+    --padding-end: 10px;
+    --min-height: 32px;
+    border: 1px solid #dbe4eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #202a34;
+    font-size: 13px;
+}
+
+.topics-links {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.topic-link {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #d9e5ef;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    color: #1f2d3d;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.topic-link ion-icon {
+    font-size: 18px;
+    color: #5f7691;
+}
+
+.empty-text {
+    color: #6c7a89;
+    font-size: 14px;
+}
+
+/* Dark mode support */
+:host-context(body.dark-theme) .backicon {
+    background-color: #2d2d2d !important;
+}
+
+:host-context(body.dark-theme) .backicon ion-icon {
+    color: #e0e0e0 !important;
+}
+
+:host-context(body.dark-theme) ion-content {
+    --background: #141b22;
+}
+
+:host-context(body.dark-theme) .topics-list-wrap {
+    background: #141b22;
+}
+
+:host-context(body.dark-theme) .language-segment {
+    --background: #253140;
+    border: 1px solid #364657;
+    border-radius: 10px;
+}
+
+:host-context(body.dark-theme) ion-segment-button {
+    --color: #c6d3df;
+    --color-checked: #dff4f1;
+    --background-checked: #2f8f86;
+    --indicator-color: transparent;
+}
+
+:host-context(body.dark-theme) .scope-select {
+    border-color: #405262;
+    background: #253140;
+    color: #e3edf7;
+}
+
+:host-context(body.dark-theme) .topic-link {
+    border-color: #435667;
+    background: linear-gradient(135deg, #1c2530 0%, #24313f 100%);
+    color: #f0f5fb;
+}
+
+:host-context(body.dark-theme) .topic-link ion-icon {
+    color: #bdd2e7;
+}
+
+:host-context(body.dark-theme) .empty-text {
+    color: #c4d2df;
+}

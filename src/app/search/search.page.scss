@@ -1,0 +1,423 @@
+
+
+
+
+
+.searchresultnavigation {
+  position: absolute;
+  top: 100px;
+  left: 0px;
+  background-color: #d5d5d5;
+  width: 100%;
+  height: 38px;
+  padding-left: 10px;
+  padding-right: 10px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 38px;
+  gap: 8px;
+
+  /* Keep pager text and arrow controls on the same vertical baseline */
+  >* {
+    position: relative;
+    top: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    align-self: center;
+  }
+}
+
+.textbox {
+  --background: #fff;
+  --color: #000;
+  --placeholder-color: #999;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  font-size: 14px;
+}
+
+ion-item {
+  --inner-padding-bottom: 0;
+  --inner-padding-end: 0;
+  --inner-padding-start: 0;
+  --inner-padding-top: 0;
+  --ion-safe-area-right: 0;
+  --background: none;
+  opacity: 1;
+  --highlight-color-focused: none;
+}
+
+.search-nav-left {
+  background-color: transparent !important;
+  background: transparent !important;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border: none !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+  align-self: center;
+
+  &:hover,
+  &:active,
+  &:focus {
+    background-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  ion-icon {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.search-nav-right {
+  background-color: transparent !important;
+  background: transparent !important;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border: none !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+  align-self: center;
+
+  &:hover,
+  &:active,
+  &:focus {
+    background-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  ion-icon {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.btn-go {
+  background-color: transparent !important;
+  background: transparent !important;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  border-radius: 0 !important;
+  cursor: pointer;
+  padding: 0 !important;
+  flex-shrink: 0;
+  margin: 0 !important;
+  overflow: hidden;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  text-indent: -9999px;
+  color: transparent !important;
+  letter-spacing: -9999px;
+  align-self: center;
+
+  &:hover,
+  &:active,
+  &:focus {
+    background-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  &::before,
+  &::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  ion-icon {
+    display: block;
+    font-size: 24px !important;
+    text-indent: 0;
+    line-height: normal;
+    letter-spacing: normal;
+    color: var(--app-text-primary) !important;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  min-width: 100px;
+  max-width: 160px;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0 8px;
+  margin: 0;
+}
+
+.searchversedata {
+  width: 100%;
+  position: absolute;
+  top: 136px;
+  left: 0px;
+  overflow: auto;
+  height: calc(100vh - 190px);
+  padding-bottom: 150px;
+  z-index: 999;
+}
+
+.hide {
+  display: none
+}
+
+.show {
+  display: block;
+}
+
+.showYellow {
+  background-color: #FFCC55;
+  color: #000000;
+  font-weight: 500;
+}
+
+.searchvers {
+  color: #000;
+  line-height: 1.5em;
+  text-align: left;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.font16 {
+  font-size: 16px !important;
+}
+
+.font18 {
+  font-size: 18px !important;
+}
+
+.black-color {
+  color: #000;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.search-info {
+
+  position: relative;
+  font-size: 12px;
+  color: #666666;
+  text-transform: capitalize;
+  text-align: center;
+}
+
+
+.search-input {
+
+  min-height: 30px !important;
+  display: inline-block;
+  width: calc(100% - 35px);
+}
+
+.search-gear {
+  font-size: 30px;
+  position: relative;
+  top: 14px;
+  margin-left: 5px;
+}
+
+.search-input-pageno {
+  background-color: #fff;
+  border: 1px solid #666666;
+  height: 34px;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  width: 55px;
+  text-align: center;
+  --highlight-color-focused: none;
+  --padding-top: 0px;
+  --padding-bottom: 0px;
+  border-radius: 7px;
+  align-self: center;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+// Dark mode styles for Search page
+body.dark-theme {
+  app-search {
+    ion-content {
+      --background: #1a1a1a !important;
+      background: #1a1a1a !important;
+    }
+
+    // Search input container - fix border-radius
+    div[style*="border:1px solid #2e353d"] {
+      border-color: #444 !important;
+      background-color: #2d2d2d !important;
+      border-radius: 25px !important;
+      overflow: hidden;
+    }
+
+    // Search input
+    .search-input {
+      --background: #2d2d2d !important;
+      --color: #e0e0e0 !important;
+      color: #e0e0e0 !important;
+      border-radius: 25px !important;
+
+      ion-input {
+        --background: #2d2d2d !important;
+        --color: #e0e0e0 !important;
+        color: #e0e0e0 !important;
+        --placeholder-color: #888 !important;
+      }
+    }
+
+    // Search info text
+    .search-info {
+      color: #b0b0b0 !important;
+    }
+
+    // Search navigation
+    .searchresultnavigation {
+      background-color: #2d2d2d !important;
+      border-color: #444 !important;
+    }
+
+    .pages {
+      color: #e0e0e0 !important;
+    }
+
+    // Page number input
+    .search-input-pageno {
+      background-color: #3a3a3a !important;
+      border-color: #666 !important;
+      --background: #3a3a3a !important;
+      --color: #ffffff !important;
+
+      input,
+      .native-input {
+        background-color: #3a3a3a !important;
+        color: #ffffff !important;
+      }
+    }
+
+    .textbox {
+      --background: #3a3a3a !important;
+      --color: #ffffff !important;
+      --placeholder-color: #999 !important;
+
+      input,
+      .native-input {
+        background-color: #3a3a3a !important;
+        color: #ffffff !important;
+      }
+    }
+
+    // Ensure ion-input wrapper also gets dark background
+    ion-input.search-input-pageno,
+    ion-input.textbox {
+      background-color: #3a3a3a !important;
+    }
+
+    // Search results
+    .vers {
+      color: #e0e0e0 !important;
+    }
+
+    .verseno {
+      color: #bb86fc !important;
+    }
+
+    .searchkey {
+      background-color: #5d4a00 !important;
+      color: #000000 !important;
+      font-weight: 600 !important;
+    }
+
+    .showYellow {
+      background-color: #cc9900 !important;
+      color: #000000 !important;
+      font-weight: 600 !important;
+      padding: 2px 4px !important;
+      border-radius: 3px !important;
+    }
+
+    // Icons
+    ion-icon {
+      color: #e0e0e0 !important;
+    }
+
+    .search-gear {
+      color: #e0e0e0 !important;
+    }
+
+    // Buttons
+    button {
+      color: #e0e0e0 !important;
+    }
+
+    .btn-go {
+      background-color: transparent !important;
+      border-color: transparent !important;
+    }
+
+    // Navigation buttons
+    .search-nav-left,
+    .search-nav-right {
+      background-color: transparent !important;
+
+      ion-icon {
+        color: #e0e0e0 !important;
+      }
+    }
+
+  }
+}

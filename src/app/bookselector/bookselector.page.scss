@@ -1,0 +1,159 @@
+.ion-page
+{
+    overflow:unset !important;
+}
+.show
+{
+    display:block !important;
+
+}
+.hide
+{
+    display:none !important;
+}
+.box-item
+{
+    width:75px;
+    text-align:center; 
+    height:50px; 
+    display:inline-block;
+    font-size:18px;
+}
+.listitem
+{
+    width:70px;
+    text-align:center; 
+    height:40px; 
+    display:inline-block;
+    font-size:24px;
+}
+.segmentButon
+{
+    font-size:14px;
+    font-weight: 600;
+
+
+}
+.book-selector-container
+{
+    width:100%;
+    height:calc(100vh - 195px);
+    overflow:auto;
+    position:relative;
+    padding-bottom:100px;
+    position: relative;
+    top:-5px;
+    
+
+}
+.filteritem
+{
+    font-size:16px;
+    font-weight: normal;
+    text-align: center;
+}
+.showitem
+{
+    font-size: 18px!important;;
+    text-align: center;
+}
+.showitemBook
+{
+    font-size:16px;
+    font-weight: normal;
+    text-align: left;
+}
+.show{
+    display: block;
+}
+.hide
+{
+    display:none;
+}
+.bookselector-select
+{
+    width:56px;
+    height:56px;
+    position: fixed;
+    bottom:15px;
+    right:15px;
+    border-radius: 50%;
+}
+.backicon
+{
+  background-color:#fff;
+}
+.chapterverseinfobar
+{
+    display:inline-block;
+    width:100%;
+    text-align: center;
+}
+.search-bar
+{
+   border-radius: 25px;
+
+}
+.bold
+{
+    font-weight: 600 !important;
+    color:#679cfe !important;
+    
+
+}
+.normal
+{
+    font-weight:normal!important;
+    color:#000;
+}
+.filterenglish
+{
+    display:none;
+}
+
+/* Light mode styles for book selector */
+.book-number {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+
+.chapter-count {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Dark mode styles for book selector */
+body.dark-theme {
+  .backicon {
+    background-color: #2d2d2d !important;
+  }
+  
+  .normal {
+    color: #e0e0e0 !important;
+  }
+  
+  .book-number {
+    color: rgba(224, 224, 224, 0.5) !important;
+  }
+  
+  .chapter-count {
+    color: rgba(224, 224, 224, 0.5) !important;
+  }
+  
+  .showitemBook {
+    color: #e0e0e0 !important;
+  }
+  
+  .filteritem {
+    color: #e0e0e0 !important;
+  }
+  
+  .showitem {
+    color: #e0e0e0 !important;
+  }
+  
+  ion-searchbar {
+    --background: #2d2d2d !important;
+    --color: #e0e0e0 !important;
+    --placeholder-color: #a0a0a0 !important;
+    --icon-color: #a0a0a0 !important;
+  }
+}

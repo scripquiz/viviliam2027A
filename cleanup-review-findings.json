@@ -1,0 +1,84 @@
+[
+  {
+    "severity": "high",
+    "category": "CSS Class Mismatch (Dark Mode Non-functional)",
+    "file": "src/app/read/read.page.scss",
+    "line": 523,
+    "description": "The dark mode rule for .notes-popup at line 524 uses a class name that doesn't exist in the HTML template. The HTML uses 'notes-pop' (line 185), but the SCSS has '.notes-popup' (with underscore) in dark mode styling only.",
+    "impact": "Dark mode notes popup will not render correctly - background colors and text will inherit wrong styles",
+    "evidence": {
+      "html_usage": "class=\"notes-pop\" at read.page.html:185",
+      "scss_definition": ".notes-pop at read.page.scss:234",
+      "broken_dark_mode_rule": ".notes-popup at read.page.scss:524"
+    },
+    "recommendation": "Change '.notes-popup' to '.notes-pop' in the dark mode block at line 524"
+  },
+  {
+    "severity": "medium",
+    "category": "Dead Code - Unused TypeScript Properties",
+    "file": "src/app/read/read.page.ts",
+    "lines": [77, 78],
+    "description": "The properties textSizeCSS and booktitlefont are declared but appear to be used inconsistently. They are assigned values (textSizeCSS at lines 128, 347, 1008; booktitlefont at lines 1193, 1198) but these may not be directly used in rendering.",
+    "impact": "Potential for confusion and maintenance issues - unused state properties bloat memory",
+    "evidence": {
+      "declared_lines": ["77: public textSizeCSS: any;", "78: public booktitlefont: any;"],
+      "assigned_lines": [128, 347, 1008, 1193, 1198],
+      "template_usage": null
+    },
+    "recommendation": "Review if these properties are actually used or should be removed to clean up state"
+  },
+  {
+    "severity": "medium",
+    "category": "Incomplete CSS Cleanup - Missing Dark Mode Rule Target",
+    "file": "src/app/read/read.page.scss",
+    "line": 524,
+    "description": "While .notes-pop is correctly styled in light mode, the dark mode rule at line 523-527 references a non-existent class name. This was likely intended to be .notes-pop.",
+    "impact": "Inconsistent UI between light and dark modes for notes popup component",
+    "recommendation": "Update '.notes-popup' selector to '.notes-pop' to match the HTML template"
+  },
+  {
+    "severity": "low",
+    "category": "Code Smell - Magic String Usage",
+    "file": "src/app/read/read.page.ts",
+    "line": 347,
+    "description": "The code at line 347 accesses this.authservice.verseList without proper null/undefined checks before iteration context (only used for assignment here).",
+    "impact": "Potential runtime error if verseList is undefined during certain states",
+    "evidence": "Line 347: this.textSizeCSS = 'zoom' + this.authservice.textSize; followed by reference to verseList at line 349",
+    "recommendation": "Add defensive checks or verify verseList initialization state"
+  },
+  {
+    "severity": "low",
+    "category": "Maintainability - Large Component File",
+    "file": "src/app/read/read.page.ts",
+    "line": 1,
+    "description": "The read.page.ts file is very large (2665 lines) and contains significant state management logic. While functional, this reduces testability and increases cognitive load.",
+    "impact": "Difficult to maintain, review, and debug - higher risk of introducing regressions",
+    "recommendation": "Consider refactoring into smaller components or services for better separation of concerns"
+  },
+  {
+    "severity": "low",
+    "category": "Cleanup Verification - Removed Classes Properly Deleted",
+    "file": "src/app/read/read.page.scss",
+    "lines": [156, 203, 299, 396, 449],
+    "description": "Verified that all classes marked for removal in commit f27d3d2 were actually removed: .font14, .font16, .font18, .circle-wrap, .notes-pop-overlay, and all .verse-mode-* classes (5 total).",
+    "impact": "Positive - cleanup was thorough for these classes",
+    "recommendation": "No action needed - cleanup was successful for these classes"
+  },
+  {
+    "severity": "low",
+    "category": "Cleanup Verification - HTML Comment Removal Verified",
+    "file": "src/app/read/read.page.html",
+    "lines": [37, 213, 228],
+    "description": "Verified that commented HTML blocks were properly removed in commit 6386de4: the gradient div (line 37 was commented), chapter mode table (line 213 area), and share buttons/audio overlay (line 228 area).",
+    "impact": "Positive - dead HTML was cleaned up",
+    "recommendation": "No action needed"
+  },
+  {
+    "severity": "low",
+    "category": "Cleanup Verification - TypeScript Stub Code Removed",
+    "file": "src/app/read/read.page.ts",
+    "description": "Verified that commented stub code was removed in commit 6386de4 including: commented Cordova import, commented audio methods, and commented toast messages.",
+    "impact": "Positive - dead TypeScript was cleaned up",
+    "recommendation": "No action needed"
+  }
+]

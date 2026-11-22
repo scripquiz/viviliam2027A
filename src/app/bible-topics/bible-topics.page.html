@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Bible Topics</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="navBack()" class="backicon">
+        <ion-icon style="font-size: 24px" name="arrow-back-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="topics-list-wrap">
+    <div class="controls-row">
+      <ion-segment
+        class="language-segment"
+        [value]="selectedLanguage"
+        (ionChange)="onLanguageChange($event.detail.value)"
+      >
+        <ion-segment-button value="ta">
+          <ion-label>தமிழ்</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="en">
+          <ion-label>English</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <ion-select
+        class="scope-select"
+        [value]="selectedScope"
+        interface="action-sheet"
+        (ionChange)="onScopeChange($event.detail.value)"
+      >
+        <ion-select-option value="all"
+          >{{ getScopeText('all') }}</ion-select-option
+        >
+        <ion-select-option value="ot"
+          >{{ getScopeText('ot') }}</ion-select-option
+        >
+        <ion-select-option value="nt"
+          >{{ getScopeText('nt') }}</ion-select-option
+        >
+        @for (book of filterBooks; track book) {
+        <ion-select-option [value]="'book:' + book.booknumber">
+          {{ selectedLanguage === 'ta' ? (book.nameTamil || book.nameEnglish) :
+          (book.nameEnglish || book.nameTamil) }}
+        </ion-select-option>
+        }
+      </ion-select>
+    </div>
+
+    <div class="topics-links">
+      @for (topic of filteredTopics; track topic) {
+      <button class="topic-link" (click)="openTopic(topic)">
+        <span>{{ getTopicLabel(topic) }}</span>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
+      } @if (filteredTopics.length === 0) {
+      <div class="empty-text">
+        {{ selectedLanguage === 'ta' ? 'தேர்ந்தெடுத்த வடிகட்டிக்கு தலைப்புகள்
+        இல்லை.' : 'No topics for this filter.' }}
+      </div>
+      }
+    </div>
+  </div>
+</ion-content>

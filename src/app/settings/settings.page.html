@@ -1,0 +1,299 @@
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Settings</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="goBack()" class="backicon">
+        <ion-icon style="font-size: 24px" name="arrow-back-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+    <ion-buttons slot="Right">
+      <button (click)="restoreDefaults()" class="enabled">
+        Restore Default
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="row" style="padding-bottom: 150px">
+    <div class="col">
+      <div class="tabs">
+        <!--         <div class="tab">
+        <input type="checkbox" class="settings-check" id="chck6">
+        <label class="tab-label" for="chck6">Home</label>
+        <div class="tab-content">
+
+          <div>
+            <ion-item>
+              <ion-select label="Daily Bible Verse" placeholder="Daily Bible Verse" interface="action-sheet"
+                *ngIf="dailyVerseRefreshed" [(ngModel)]="selectedLanguage_DailyBibleVerse" class="select"
+                (ionChange)="setLanguage($event,11)">
+                <ion-select-option value="TAMIL">Tamil</ion-select-option>
+                <ion-select-option value="ENGLISH">English</ion-select-option>
+              </ion-select>
+            </ion-item>
+          </div>
+
+
+          <ion-item>
+            <ion-select label="Daily Bible Quote" placeholder="Daily Bible Quote" interface="action-sheet"
+              *ngIf="dailyQuoteRefreshed" [(ngModel)]="selectedLanguage_DailyBibleQuote"
+              (ionChange)="setLanguage($event,13)">
+              <ion-select-option value="TAMIL">Tamil</ion-select-option>
+              <ion-select-option value="ENGLISH">English</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+
+        </div>
+      </div> -->
+        <div class="tab">
+          <input type="checkbox" class="settings-check" id="chck1" />
+          <label class="tab-label" for="chck1">Bible Reading</label>
+          <div class="tab-content">
+            <ion-item>
+              @if (bibleRefreshed) {
+              <ion-select
+                label="Default Bible"
+                placeholder="Select Bible"
+                interface="action-sheet"
+                [(ngModel)]="selectedDefaultBibleId"
+                class="select"
+                (ionChange)="getSelectedBible()"
+              >
+                @for (item of bibleList; track item) {
+                <ion-select-option [value]="item.id"
+                  >{{item.title}} - {{item.language}}</ion-select-option
+                >
+                }
+              </ion-select>
+              }
+            </ion-item>
+
+            <div>
+              <div class="colL linespace">Full Screen Mode</div>
+              <div class="colR toggleposition">
+                <ion-toggle
+                  [checked]="fullscreenModeToggle"
+                  (ionChange)="setSelectedFullscreenMode($event)"
+                ></ion-toggle>
+              </div>
+            </div>
+            <div>
+              <div class="colL linespace">Paragraph Mode</div>
+              <div class="colR toggleposition">
+                <ion-toggle
+                  [checked]="paragraphToggle"
+                  (ionChange)="setSelectedParagraphMode($event)"
+                ></ion-toggle>
+              </div>
+            </div>
+
+            <div>
+              <div class="colL linespace">Verse Number</div>
+              <div class="colR toggleposition">
+                <ion-toggle
+                  [checked]="verseNumberToggle"
+                  (ionChange)="setSelectedShowVerseMode($event)"
+                ></ion-toggle>
+              </div>
+            </div>
+            <div>
+              <div class="colL linespace">BSI Number</div>
+              <div class="colR toggleposition">
+                <ion-toggle
+                  [checked]="BSINumberToggle"
+                  (ionChange)="setSelectedBSINumberShow($event)"
+                ></ion-toggle>
+              </div>
+            </div>
+
+            <div>
+              <div class="colL linespace">BSI Red Letter</div>
+              <div class="colR toggleposition">
+                <ion-toggle
+                  [checked]="BSIRedLettersToggle"
+                  (ionChange)="setSelectedBSIRedLettersShow($event)"
+                ></ion-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--         <div class="tab">
+      <input type="checkbox" class="settings-check" id="chck7">
+      <label class="tab-label" for="chck7">Bible Audio</label>
+      <div class="tab-content">
+        <div>
+          <div class="colL linespace">Text Highlight</div>
+          <div class="colR toggleposition">
+            <ion-toggle [checked]="TextHighlightToggle"
+            (ionChange)="setSelecteTextHighlightShow($event)"></ion-toggle>
+          </div>
+        </div>
+        <ion-item>
+          <ion-select label="Speed" placeholder="Select speed" interface="action-sheet" *ngIf="readSpeedRefreshed"
+            [(ngModel)]="read_speed" class="select-font-size" (ionChange)="setReadSpeed($event)">
+            <ion-select-option value=".75">.75x</ion-select-option>
+            <ion-select-option value=".9">.9x</ion-select-option>
+            <ion-select-option value="1">1x</ion-select-option>
+            <ion-select-option value="1.1">1.1x</ion-select-option>
+            <ion-select-option value="1.25">1.25x</ion-select-option>
+            <ion-select-option value="1.5">1.5x</ion-select-option>
+            <ion-select-option value="1.75">1.75x</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+      </div>
+    </div> -->
+        <div class="tab">
+          <input type="checkbox" class="settings-check" id="chck2" />
+          <label class="tab-label settinings-tabitem" for="chck2"
+            >Compare</label
+          >
+          <div class="tab-content">
+            <ion-list>
+              <ion-item class="itemCompare">
+                <div style="width: 100%">
+                  <div class="col60">
+                    {{defaultBible}} - {{defaultLanguage}}
+                  </div>
+                  <div class="col40 grey">
+                    Default <span class="circle10">&nbsp;</span>
+                  </div>
+                </div>
+              </ion-item>
+              <ion-reorder-group
+                (ionItemReorder)="onRenderItems($event)"
+                disabled="false"
+              >
+                @for (item of comparebibleList; track item) {
+                <ion-item class="itemCompare">
+                  <div style="width: 100%">
+                    <div class="colL">{{item.title}} - {{item.language}}</div>
+                    <div class="colR">
+                      @if (orderRefreshed) {
+                      <ion-toggle
+                        [(ngModel)]="item.isshow"
+                        (ionChange)="notifyToggle($event, item.id)"
+                        class="paragraphToggle"
+                      ></ion-toggle>
+                      }
+                    </div>
+                  </div>
+                  <ion-reorder>
+                    <ion-icon name="move" class="moveIcon"></ion-icon>
+                  </ion-reorder>
+                </ion-item>
+                }
+              </ion-reorder-group>
+            </ion-list>
+            <div>
+              <div class="colL linespace">Show Label</div>
+              <div class="colR toggleposition">
+                <ion-toggle
+                  [checked]="CompareShowLabelToggle"
+                  (ionChange)="setCompareLabel($event)"
+                ></ion-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab">
+          <input type="checkbox" class="settings-check" id="chck8" />
+          <label class="tab-label" for="chck8">Dark Mode</label>
+          <div class="tab-content">
+            <div>
+              <div class="colL linespace">Global Dark Mode</div>
+              <div class="colR toggleposition">
+                <ion-toggle
+                  [checked]="isGlobalDarkMode"
+                  (ionChange)="toggleGlobalDarkMode($event)"
+                ></ion-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--         <div class="tab">
+    <input type="checkbox" class="settings-check" id="chck3">
+    <label class="tab-label" for="chck3">Fonts</label>
+    <div class="tab-content">
+      <ion-segment scrollable="true" [(ngModel)]="fontselectedsegmentemode">
+        <ion-segment-button class="segmentButon" value="TAMIL">
+          <ion-label>Tamil</ion-label>
+        </ion-segment-button><ion-segment-button class="segmentButon" value="ENGLISH">
+        <ion-label>English</ion-label>
+      </ion-segment-button>
+
+    </ion-segment>
+    <div style="color:#000">
+      <div [ngStyle]="{'display': fontselectedsegmentemode=='TAMIL' ? 'block' : 'none'}">
+
+        <ion-list>
+          <ion-item *ngFor="let item of fontListTamil let i=index" (click)="setFont('Tamil',item.id,i)">
+
+
+            <div class="font-rows-tamil">
+              <div style="width:70%;float:left;">
+                <span [innerHTML]="item.font_text"></span>
+              </div>
+              <div class="font-rows-tick-tamil">
+                <ion-icon name="checkmark" class="isset"
+                [ngStyle]="{'display': item.isset==1? 'block' : 'none'}"></ion-icon>
+              </div>
+            </div>
+
+
+          </ion-item>
+        </ion-list>
+      </div>
+      <div [ngStyle]="{'display': fontselectedsegmentemode=='ENGLISH' ? 'block' : 'none'}">
+
+        <ion-list>
+          <ion-item *ngFor="let item of fontListEnglish let i=index" (click)="setFont('English',item.id,i)">
+
+            <div class="font-rows-english">
+              <div style="width:70%;float:left;">
+                <span [innerHTML]="item.font_text"></span>
+              </div>
+              <div class="font-rows-tick-english">
+                <ion-icon name="checkmark" class="isset"
+                [ngStyle]="{'display': item.isset==1? 'block' : 'none'}"></ion-icon>
+              </div>
+            </div>
+
+
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+        <!--         <div class="tab">
+<input type="checkbox" class="settings-check" id="chck5">
+<label class="tab-label" for="chck5">Text Size</label>
+<div class="tab-content">
+  <div style="color:#000">
+    <ion-item>
+
+
+      <ion-range min="1" max="5" snaps="true" step=1 value="{{textSize}}" (ionChange)="onChangeSize($event)"
+        style="left:-10px;--bar-height:3px">
+      </ion-range>
+
+    </ion-item>
+    <p style="text-decoration: underline;">Preview</p>
+    <div class="english-preview {{globalFontEnglish}} {{ textSizeCSS }}">
+      In the beginning God created the heavens and the earth.
+    </div>
+    <div class="tamil-preview {{globalFontTamil}} {{ textSizeCSS }}">
+      ஆதியிலே தேவன் வானத்தையும் பூமியையும் சிருஷ்டித்தார்.
+    </div>
+  </div>
+</div>
+</div> -->
+      </div>
+    </div>
+  </div>
+</ion-content>

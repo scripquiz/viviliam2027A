@@ -1,0 +1,165 @@
+.custom-portrait {
+  --width: calc(100% - 125px);
+
+}
+
+.custom-landscape {
+  --width: calc(100% - 125px);
+
+}
+
+.show {
+  display: block !important;
+}
+
+.hide {
+  display: none !important;
+  ;
+}
+
+ion-select-option {
+  padding-right: 10px;
+}
+
+.disabled-drawermenu {
+  color: #d7d7d7 !important;
+  border: none;
+}
+
+.enabled-drawermenu {
+  color: #000 !important;
+  border: none;
+}
+
+.myaccount-popover {
+  width: 215px;
+  padding: 10px;
+  background-color: #fff;
+  z-index: 99;
+  right: 5px;
+  position: absolute;
+  top: 0px;
+  border-radius: 5px;
+  padding-bottom: 5px;
+  border: 1px solid #666666;
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, .2);
+  color: #000;
+}
+
+.myaccount-popovermenu-item {
+  width: 100%;
+}
+
+.myaccount-signup-menu-show {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0px;
+  top: 60px;
+  z-index: 999;
+  display: inline-block;
+  transition: all .5s ease-in-out;
+  left: 0px;
+}
+
+.myaccount-signup-menu-hide {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0px;
+  top: 60px;
+  z-index: 999;
+
+  left: calc(100%);
+  transition: all .5s ease-in-out;
+}
+
+.enableditem {
+  color: #000;
+}
+
+.disableditem {
+  color: #666666;
+}
+
+.audio-left-nav {
+  height: 40px;
+}
+
+.audio-right-nav {
+  height: 40px;
+}
+
+.audio-play {
+  height: 60px;
+  position: relative;
+  top: 7px;
+}
+
+.audio-play-skip {
+  height: 40px;
+  position: relative;
+  top: 7px;
+}
+
+:host {
+  /* Add padding for the status bar */
+  --ion-safe-area-top: env(safe-area-inset-top);
+}
+
+.has-status-bar {
+  padding-top: var(--ion-safe-area-top, 20px);
+}
+
+/* For content that should go under the navigation bar */
+.extend-to-bottom {
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--ion-safe-area-bottom, 0);
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu {
+  ion-content {
+    --background: #ffffff !important;
+    background: #ffffff !important;
+  }
+
+  .search-settings-shell {
+    background-color: #ffffff !important;
+  }
+
+  .search-settings-logo {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e7e7e7;
+  }
+
+  .search-settings-title {
+    background-color: #e8f3ed !important;
+    color: #1f5a3f !important;
+    font-weight: 600;
+  }
+
+  .search-settings-content {
+    background-color: #ffffff !important;
+    color: #1f1f1f;
+  }
+
+  ion-select.search-settings-select {
+    background-color: #ffffff !important;
+    border: 1px solid #cfd6d1;
+    border-radius: 8px;
+    --background: #ffffff !important;
+    --color: #1f1f1f !important;
+    --placeholder-color: #5d5d5d !important;
+  }
+
+  .search-settings-radio-group ion-item {
+    --background: transparent !important;
+    --color: #1f1f1f !important;
+    color: #1f1f1f !important;
+  }
+
+  .search-settings-radio-group ion-radio {
+    --color: #7a7a7a !important;
+    --color-checked: #2fbf71 !important;
+  }
+}

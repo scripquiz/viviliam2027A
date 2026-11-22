@@ -1,0 +1,115 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Select</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="navBackNoSet()" class="backicon">
+        <ion-icon style="font-size: 24px" name="arrow-back-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-segment
+    scrollable="true"
+    [(ngModel)]="selectedsegmentemode"
+    (ionChange)="segmentChanged($event)"
+  >
+    <ion-segment-button class="segmentButon" value="books">
+      <ion-label>Books</ion-label> </ion-segment-button
+    ><ion-segment-button class="segmentButon" value="chapters">
+      <ion-label>Chapters</ion-label>
+    </ion-segment-button>
+    <ion-segment-button class="segmentButon" value="vers">
+      <ion-label>Verses</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+  <ion-searchbar
+    animated
+    placeholder="Search"
+    class="search-bar {{showsearchbar}}"
+    [(ngModel)]="searchKeyword"
+    ios-nopadding
+    (ionInput)="filterList($event)"
+  ></ion-searchbar>
+  <ion-item class="chapterverseinfobar {{showchapterverseinfobar}}">
+    <ion-label><span [innerHTML]="chapterverseinfo"></span></ion-label>
+  </ion-item>
+  <div class="book-selector-container" id="search-container">
+    <ion-list lines="none">
+      @for (filteredItem of filteredItems; track filteredItem) {
+      <ion-item>
+        <ion-label
+          class="ion-text-wrap"
+          (click)="navigate(filteredItem.number,filteredItem.item);"
+        >
+          <ion-text color="primary">
+            <!-- <h3 class="filteritem" >{{ filteredItem.item }}</h3> -->
+            <h3 class="filteritem" [innerHTML]="filteredItem.item"></h3>
+          </ion-text>
+        </ion-label>
+      </ion-item>
+      }
+    </ion-list>
+    <ion-list lines="none" class="{{bookShow}}">
+      @for (bookItem of books; track bookItem) {
+      <ion-item>
+        <ion-label
+          class="ion-text-wrap"
+          (click)="navigate(bookItem.number, bookItem.item);"
+        >
+          <h3
+            id="book{{ bookItem.number }}"
+            class="showitemBook  {{ (bookItem.number==selectedBookNumber?'bold':'normal') }} "
+          >
+            <span class="book-number" style="font-size: 10px"
+              >{{ bookItem.number }}
+            </span>
+            <span
+              [innerHTML]="bookItem.item"
+              style="font-size: 16px !important"
+            ></span>
+            <span class="chapter-count" style="font-size: 12px"
+              >({{ bookItem.chaptercount }})</span
+            >
+          </h3>
+        </ion-label>
+      </ion-item>
+      }
+    </ion-list>
+
+    <ion-list lines="none" class="{{chaptersShow}}">
+      @for (chapterItem of chapters; track chapterItem ) {
+      <ion-item class="box-item">
+        <ion-label
+          class="listitem"
+          (click)="navigate(chapterItem.number, chapterItem.item);"
+        >
+          <h3
+            class="showitem  {{ (chapterItem.number==selectedChapterNumber?'bold':'normal') }} "
+          >
+            {{ chapterItem.item }}
+          </h3>
+        </ion-label>
+      </ion-item>
+      }
+    </ion-list>
+    <ion-list lines="none" class="{{versShow}}">
+      @for (versItem of vers; track versItem ) {
+      <ion-item class="box-item">
+        <ion-label
+          class="listitem"
+          (click)="navigate(versItem.item, versItem.item);"
+        >
+          <h3 class="showitem">{{ versItem.item }}</h3>
+        </ion-label>
+      </ion-item>
+      }
+    </ion-list>
+    <img
+      src="../../assets/images/tick.png"
+      class="bookselector-select"
+      (click)="navBack()"
+    />
+  </div>
+</ion-content>

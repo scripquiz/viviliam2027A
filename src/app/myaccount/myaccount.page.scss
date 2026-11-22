@@ -1,0 +1,398 @@
+@use "sass:color";
+
+$midnight: #fff;
+$clouds: #000;
+
+// General
+body {
+  color: $midnight;
+  background: #fff;
+  padding: 0 1em 1em;
+}
+
+h1 {
+  margin: 0;
+  line-height: 2;
+  text-align: center;
+}
+
+h2 {
+  margin: 0 0 .5em;
+  font-weight: normal;
+}
+
+.settings-check {
+  position: absolute;
+  opacity: 0;
+  z-index: -1;
+}
+
+// Layout
+.row {
+  display: flex;
+
+  .col {
+    flex: 1;
+
+    &:last-child {
+      margin-left: 0em;
+      margin-right: 0em;
+    }
+  }
+}
+
+/* Accordion styles */
+.tabs {
+  border-radius: 0px;
+  overflow: hidden;
+}
+
+.tab {
+  width: 100%;
+  color: 000;
+  overflow: hidden;
+
+  &-label {
+    display: flex;
+    justify-content: space-between;
+
+    background: $midnight;
+    font-size: 20px;
+    padding: 20px;
+    padding-top: 22px;
+    cursor: pointer;
+
+    /* Icon */
+    &:hover {
+      background: color.adjust($midnight, $lightness: -10%);
+    }
+
+    &::after {
+      content: "\276F";
+      width: 1em;
+      height: 1em;
+      text-align: center;
+      transition: all .35s;
+    }
+  }
+
+  &-content {
+    max-height: 0;
+    padding: 0 1em;
+    color: $midnight;
+    background: white;
+    transition: all .35s;
+  }
+
+  &-close {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1em;
+    font-size: 0.75em;
+    background: $midnight;
+    cursor: pointer;
+
+    &:hover {
+      background: color.adjust($midnight, $lightness: -10%);
+    }
+  }
+}
+
+// :checked
+input:checked {
+  +.tab-label {
+    background: color.adjust($midnight, $lightness: -10%);
+
+    &::after {
+      transform: rotate(90deg);
+    }
+  }
+
+  ~.tab-content {
+    max-height: 500vh;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+  }
+}
+
+.col60 {
+  width: 60%;
+  display: inline-block;
+
+}
+
+.col40 {
+  width: 40%;
+  display: inline-block;
+  text-align: right;
+}
+
+.circle10 {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background-color: rgba(89, 185, 90, 1);
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.grey {
+  color: #b1b1b1;
+}
+
+
+.colL-defaultbible {
+  width: 50%;
+  display: inline-block;
+  color: #000;
+  vertical-align: top;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 18px;
+  padding-left: 15px;
+
+}
+
+.colR-defaultbible {
+  width: 50%;
+  display: inline-block;
+  text-align: left;
+}
+
+
+.paragraphToggle {
+  position: relative;
+  display: inline-block;
+  top: 3px;
+}
+
+.backicon {
+  background-color: #fff;
+}
+
+/* Dark mode for back icon */
+body.dark-theme .backicon {
+  background-color: #2d2d2d !important;
+}
+
+body.dark-theme .backicon ion-icon {
+  color: #e0e0e0 !important;
+}
+
+.itemCompare {
+  border: 1px solid #b8b8b8;
+  background-color: white;
+  border-radius: 15px;
+  //box-shadow: 3px 3px 3px rgb(0 0 0 / 30%);
+  margin: 10px;
+  font-size: 18px;
+}
+
+.moveIcon {
+  position: relative;
+  top: 1px;
+  height: 31px;
+  left: -10px;
+}
+
+.fonts-language {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  padding-top: 20px;
+}
+
+.arial {
+  font-family: arial !important;
+}
+
+.times {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+.Kavivanar {
+  font-family: Kavivanar !important;
+}
+
+.NotoSerif {
+  font-family: NotoSerif !important;
+}
+
+.fontsize_english {
+  font-size: 26px !important;
+}
+
+.fontsize_tamil {
+  font-size: 22px !important;
+}
+
+.isset {
+  float: right;
+}
+
+.theme-box {
+  display: inline-block;
+  width: calc(20% - 5px);
+  height: 70px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 5px;
+}
+
+.margin-left {
+  margin-left: 5px;
+}
+
+// .themepic1
+// {
+//   background-image: url(../../assets/images/theme1.png);
+// }
+// .themepic2
+// {
+//   background-image: url(../../assets/images/theme2.png);
+// }
+// .themepic3
+// {
+//   background-image: url(../../assets/images/theme3.png);
+// }
+// .themepic4
+// {
+//   background-image: url(../../assets/images/theme4.png);
+// }
+// .themepic5
+// {
+//   background-image: url(../../assets/images/theme5.png);
+// }
+.selected {
+  border: 5px solid #888888;
+}
+
+.notselected {
+  border: 2px solid #a6a6a6;
+}
+
+.class {
+  margin-right: 15px;
+}
+
+.custom-ion-range-slider {
+  --bar-background: rgb(165, 165, 165);
+  --bar-background-active: #777777;
+  --bar-border-radius: 15;
+  --bar-height: 15px;
+  --height: 15px;
+  --knob-background: rgba(83, 83, 83, 0.6);
+  --knob-border-radius: 15;
+  --knob-size: 10px;
+}
+
+.rangecustom {
+  --knob-size: 35px;
+  --bar-height: 5px;
+  --knob-border-radius: 50%;
+  --knob-background: var(--bar-background-active);
+  --bar-background: rgba(var(--ion-color-primary-rgb, 56, 128, 255), 0.26);
+  --bar-background-active: var(--ion-color-primary, #3880ff);
+  --bar-border-radius: 0;
+  --height: 42px;
+  --pin-background: var(--ion-color-primary, #3880ff);
+  --pin-color: var(--ion-color-primary-contrast, #fff);
+  padding: 8px;
+  font-size: 12px;
+}
+
+.paragraphtoggleclass {
+  position: relative;
+  top: 15px;
+  left: -3px;
+  font-size: 25px !important;
+}
+
+.versenumbertoggleclass {
+  position: relative;
+  top: 15px;
+  left: -3px;
+  font-size: 25px !important;
+}
+
+.linespace {
+  padding-top: 10px;
+  margin-top: 10px;
+  padding-bottom: 10px;
+  ;
+  font-size: 18px;
+  padding-left: 15px;
+}
+
+
+
+.row-tab {
+  position: fixed;
+  padding: 15px;
+  background-color: #fff;
+  width: 100%;
+  text-align: center;
+}
+
+.row-tab-item {
+  font-size: 16px;
+  display: inline-block;
+  padding: 0px;
+
+
+}
+
+.landscape-home-tab {
+  width: auto;
+}
+
+.TAMIL {
+  border-bottom: 3px solid #2476ff;
+
+}
+
+.ENGLISH {
+
+  border-bottom: 3px solid #2476ff;
+}
+
+.font-rows-tamil {
+  width: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+  padding-top: 13px;
+  // padding-bottom: 14px !important; 
+  //font-size:14px;
+  height: 60px;
+  vertical-align: middle;
+}
+
+.font-rows-english {
+  width: 100%;
+  border-bottom: 1px solid rgba(0, 0, 0, .2);
+  padding-top: 10px;
+  // padding-bottom: 14px !important; 
+  //font-size:14px;
+  height: 60px;
+  vertical-align: middle;
+}
+
+.font-rows-tick-tamil {
+  width: 30%;
+  float: left;
+  text-align: right;
+  position: relative;
+  padding-top: 10px;
+}
+
+.font-rows-tick-english {
+  width: 30%;
+  float: left;
+  text-align: right;
+  position: relative;
+  padding-top: 12px;
+}

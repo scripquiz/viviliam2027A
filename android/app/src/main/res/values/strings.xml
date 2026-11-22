@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Viviliam</string>
+    <string name="title_activity_main">Viviliam</string>
+    <string name="package_name">com.fredfrank.viviliam</string>
+    <string name="custom_url_scheme">com.fredfrank.viviliam</string>
+</resources>

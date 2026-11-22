@@ -1,0 +1,12 @@
+.backicon {
+  background-color: #fff;
+}
+
+/* Dark mode for back icon */
+body.dark-theme .backicon {
+  background-color: #2d2d2d !important;
+}
+
+body.dark-theme .backicon ion-icon {
+  color: #e0e0e0 !important;
+}

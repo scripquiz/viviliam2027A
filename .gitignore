@@ -1,0 +1,176 @@
+# Angular Specific
+.angular/
+.angular/cache/
+.angular/cache/**/*
+**/angular-webpack/
+**/webpack-cache/
+
+# Ionic Specific
+.ionic/
+ionic-cache/
+.ionic-native/
+
+# Node Modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build Outputs
+/dist
+/www
+/platforms
+/plugins
+/build
+/out
+/coverage
+
+# Webpack and Bundling
+**/*.pack
+**/*.cache
+webpack-stats.json
+
+# Temporary Files
+*.tmp
+*.log
+*.bak
+*.swp
+*.swo
+temp/
+tmp/
+
+# IDE Specific
+.idea/
+.vs/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Environment Files
+.env
+*.env
+*.env.local
+*.env.development
+*.env.production
+
+# Performance and Profiling
+*.heapprofile
+*.hprof
+*.log.*.*.*.*.*.*.trace
+
+# TypeScript Compilation
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Cordova Specific
+/cordova/platforms/
+/cordova/plugins/
+/cordova/www/
+
+# Android Specific
+android/.gradle/
+android/build/
+android/app/build/
+*.apk
+*.aab
+android/.idea/
+android/local.properties
+android/captures/
+
+# iOS Specific
+ios/build/
+ios/Pods/
+*.xcworkspace
+*.xcscmblueprint
+*.ipa
+*.dSYM.zip
+
+# Dependency Caches
+npm-cache/
+yarn-cache/
+.pnp/
+.pnp.js
+
+# Sourcemaps
+*.map
+*.sourcemap
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+/coverage
+.nyc_output/
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+jspm_packages/
+typings/
+
+# Local database
+/src/assets/databases/viviliamSQLite.db
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.test
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# Temporary folders
+.temp/
+.tmp/
+
+# Production build files
+/build
+/public
+
+# Amplify
+amplify/\#current-cloud-backend
+amplify/.config.json
+amplify/backend/amplify-meta.json
+amplify/backend/awscloudformation
+src/assets/databases/viviliamSQLite.db

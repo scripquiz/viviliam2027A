@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@app/*": [
+                "src/app/*"
+            ],
+            "@environments/*": [
+                "src/environments/*"
+            ],
+            "@assets/*": [
+                "src/assets/*"
+            ],
+            "@providers/*": [
+                "src/providers/*"
+            ],
+            "@theme/*": [
+                "src/theme/*"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "www",
+        "platforms",
+        "plugins",
+        "android"
+    ]
+}

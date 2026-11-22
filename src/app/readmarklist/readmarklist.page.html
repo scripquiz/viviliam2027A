@@ -1,0 +1,413 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{authservice.pageName}}</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="goBack()" class="backicon">
+        <ion-icon style="font-size: 24px" name="arrow-back-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <button
+        ion-button=""
+        icon-only=""
+        class="button-normal-readmarklist"
+        style="background-color: #fff"
+        [ngStyle]="{'display': readMarkList.length!=0? 'block' : 'none'}"
+        (click)="deleteAll()"
+      >
+        Delete All
+      </button>
+      <button
+        ion-button=""
+        icon-only=""
+        style="background-color: #fff; border: none !important"
+      >
+        <!-- <ion-icon ios="ios-settings" md="md-settings" (click)="openSettings()"></ion-icon> -->
+
+        <ion-icon
+          name="menu"
+          style="
+            top: 1px;
+            font-size: 28px;
+            position: relative;
+            border: none !important;
+          "
+          (click)="showhidePopoverMenu()"
+        >
+        </ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div
+    style="
+      width: 100%;
+      min-height: 100%;
+      padding: 15px;
+      padding-bottom: 200px;
+      background-color: #ebebeb;
+    "
+  >
+    <div class="nodatainfo {{nodataState}}">
+      {{authservice.pageName}} are not available!
+    </div>
+    <div
+      style="
+        width: calc(100% - 30px);
+        height: 40px;
+        position: fixed;
+        background-color: #fff;
+      "
+    >
+      <div
+        style="
+          padding-left: 10px;
+          width: 25%;
+          float: left;
+          background-color: #fff;
+          text-align: center;
+        "
+      >
+        @if (fileterRefreshed) {
+        <ion-select
+          placeholder="Filter"
+          interface="action-sheet"
+          [(ngModel)]="filerBy"
+          style="background-color: #fff; padding-right: 10px"
+          class="searchselect"
+          (ionChange)="setFilterBible($event)"
+        >
+          <ion-select-option value="0">ALL</ion-select-option>
+          <ion-select-option value="1">WEB</ion-select-option>
+          <ion-select-option value="2">KJV</ion-select-option>
+          <ion-select-option value="3">BSI</ion-select-option>
+          <ion-select-option value="4">ERV</ion-select-option>
+          <ion-select-option value="5">ETB</ion-select-option>
+        </ion-select>
+        }
+      </div>
+      <div
+        style="
+          width: 30%;
+          float: left;
+          background-color: #fff;
+          text-align: center;
+        "
+      >
+        @if (sortByRefreshed) {
+        <ion-select
+          interface="action-sheet"
+          [(ngModel)]="sortBy"
+          style="background-color: #fff; float: left; width: 100%"
+          class="select"
+          (ionChange)="bindSortOptions($event)"
+        >
+          <ion-select-option value="1">Date</ion-select-option>
+          <ion-select-option value="2">Chapter</ion-select-option>
+        </ion-select>
+        }
+      </div>
+      <div
+        style="
+          width: 45%;
+          float: left;
+          background-color: #fff;
+          text-align: center;
+        "
+      >
+        @if (sortOptionsRefreshed) {
+        <ion-select
+          placeholder="Sort by"
+          interface="action-sheet"
+          [(ngModel)]="sortOption"
+          style="background-color: #fff; padding-right: 10px"
+          class="searchselect"
+          (ionChange)="bindSortBy($event)"
+        >
+          @for (item of sortOptions; track item) {
+          <ion-select-option [value]="item.id"
+            >{{item.title}}</ion-select-option
+          >
+          }
+        </ion-select>
+        }
+      </div>
+    </div>
+    <div class="nodatainfo {{nodataState}}">
+      {{authservice.pageName}} are not available!
+    </div>
+    <div class="searchresultnavigation_readmarklist" class="{{filters}}">
+      <table style="width: 100%" cellspacing="0" cellpadding="0">
+        <tr>
+          <td style="width: 70%; text-align: center">
+            <div class="searchnav_readmarklist">
+              <button
+                ion-button=""
+                icon-only=""
+                class="search-nav-left-marklist"
+                (click)="gotoPrevPage()"
+              ></button>
+              <span class="pagesCount">{{ pager }}</span>
+              <button
+                ion-button=""
+                icon-only=""
+                class="search-nav-right-marklist"
+                (click)="gotoNextPage()"
+              ></button>
+            </div>
+          </td>
+          <td style="width: 20%; z-index: 0">
+            <!-- <ion-input  type="number"  [(ngModel)]="gotoPage" class="ion-no-padding textbox_readmarklist"  name="pagenumber"></ion-input> -->
+            <!-- <ion-item class="marklist-input-pageno"> -->
+            <!-- <ion-input type="number"  [(ngModel)]="gotoPage" name="pagenumber" style="position:relative;top:-14px;padding:0px;text-align: center;" ></ion-input> -->
+            <ion-input
+              type="number"
+              [(ngModel)]="gotoPage"
+              name="pagenumber"
+              class="nav-input-pageno textbox"
+            ></ion-input>
+
+            <!-- </ion-item> -->
+          </td>
+          <td>
+            <button
+              class="btn-go_readmarklist"
+              style="top: 5px"
+              (click)="gotoPageNumber()"
+            ></button>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div
+      style="
+        width: calc(100% - 31px);
+        height: calc(100vh - 181px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        position: fixed;
+        top: 171px;
+      "
+      (click)="hideHighlightEditOverlay()"
+    >
+      @for (readMarkItem of readMarkList; track readMarkItem; let i = $index) {
+      <div
+        class="readmark-card"
+        style="
+          width: 100%;
+          padding: 10px;
+          background-color: #fff;
+          border-radius: 15px;
+          margin-bottom: 15px;
+          position: relative;
+        "
+        [ngStyle]="{'display': readMarkItem.deleted=='0'? 'block' : 'none'}"
+        text-wrap
+      >
+        <div style="width: 100%">
+          <span style="font-weight: 600"
+            >{{readMarkItem.bookname}}
+            {{readMarkItem.cnumber}}:{{readMarkItem.vnumber}} (
+            {{readMarkItem.bible}} )</span
+          >
+          <span
+            [ngStyle]="{'display': authservice.pageName=='Highlights'? 'inline-flex' : 'none'}"
+            style="margin-left: 10px"
+            class="circle-highlight-list {{ readMarkItem.textHighlight }}"
+          ></span>
+          <div
+            class="audio-icon-read-marklist"
+            [ngStyle]="{'display': (readMarkItem.bible =='BSI' || readMarkItem.bible =='KJV') && (readMarkItem.audioState=='STOPPED' || readMarkItem.audioState =='PAUSE')  ? 'inline-block' : 'none'}"
+            (click)="StartAudio(i, readMarkItem.bibleid, readMarkItem.bible, readMarkItem.booknumber, readMarkItem.cnumber, readMarkItem.vnumber)"
+          >
+            <img src="../assets/images/play-green.png" />
+          </div>
+          <div
+            class="audio-icon-read-marklist"
+            [ngStyle]="{'display':  (readMarkItem.bible =='BSI' || readMarkItem.bible =='KJV') && readMarkItem.audioState=='PLAYING' ? 'inline-block' : 'none'}"
+            (click)="PauseAudio();"
+          >
+            <img src="../assets/images/pause-green.png" class="audio-play" />
+          </div>
+          <img
+            src="../../assets/images/more.png"
+            style="width: 18px; position: absolute; top: 10px; right: 15px"
+            (click)="toggleMarkPopup(i)"
+          />
+          <div
+            class="vers"
+            style="
+              margin-top: 15px;
+              line-height: 1.4em;
+              padding-left: 0px !important;
+              padding-right: 0px !important;
+            "
+            [innerHTML]="readMarkItem.versData"
+          ></div>
+          <div
+            [ngStyle]="{'display': authservice.pageName=='Notes'? 'inline-flex' : 'none'}"
+            class="notes"
+            [innerHTML]="readMarkItem.notes"
+          ></div>
+          <div class="{{readMarkItem.popclass}}">
+            <div class="popovermenu-seperator">&nbsp;</div>
+            <div class="popovermenu-space">&nbsp;</div>
+            <div
+              class="popovermenu-item"
+              (click)="gotoRead(readMarkItem.bibleid, readMarkItem.booknumber, readMarkItem.cnumber, readMarkItem.vnumber, readMarkItem.language)"
+            >
+              <div class="popovermenu-icon">
+                <ion-icon name="book-outline"></ion-icon>
+              </div>
+              <div class="popovermenu-caption">
+                <span class="popovermenu-caption-text">Read</span>
+              </div>
+            </div>
+            <div class="popovermenu-seperator">&nbsp;</div>
+            <div class="popovermenu-space">&nbsp;</div>
+            <div class="popovermenu-item">
+              <div class="popovermenu-icon">
+                <ion-icon name="git-compare"></ion-icon>
+              </div>
+              <div class="popovermenu-caption">
+                <span
+                  class="popovermenu-caption-text"
+                  (click)="gotoCompare(readMarkItem.bibleid, readMarkItem.booknumber, readMarkItem.cnumber, readMarkItem.vnumber, readMarkItem.language)"
+                  >Compare</span
+                >
+              </div>
+            </div>
+            <div
+              [ngStyle]="{'display': authservice.pageName!='Bookmarks'? 'block' : 'none'}"
+            >
+              <div class="popovermenu-seperator">&nbsp;</div>
+              <div class="popovermenu-space">&nbsp;</div>
+              <div
+                class="popovermenu-item"
+                (click)="EditItem(readMarkItem.vid, i)"
+              >
+                <div class="popovermenu-icon">
+                  <ion-icon
+                    name="create-outline"
+                    class="drawermenu-icon"
+                  ></ion-icon>
+                </div>
+                <div class="popovermenu-caption">
+                  <span class="popovermenu-caption-text">Edit</span>
+                </div>
+              </div>
+            </div>
+            <div class="popovermenu-seperator">&nbsp;</div>
+            <div class="popovermenu-space">&nbsp;</div>
+            <div
+              class="popovermenu-item"
+              (click)="showConfirmForDelete(readMarkItem.vid, i)"
+            >
+              <div class="popovermenu-icon">
+                <ion-icon
+                  name="trash-outline"
+                  class="drawermenu-icon"
+                ></ion-icon>
+              </div>
+              <div class="popovermenu-caption">
+                <span class="popovermenu-caption-text">Delete</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- <div class="readmarklist-overlay" [ngStyle]="{'display':highlightEditState=='1' ?'inline-block':'none'}" (click)="hideHighlightEditOverlay()"> -->
+        <div class="{{drawer_highlightedit}}">
+          <div class="drawermenu-highlight" style="overflow: auto">
+            <div
+              style="
+                width: auto;
+                overflow: auto;
+                display: inline-flex;
+                padding-left: 10px;
+                padding-right: 10px;
+                margin-top: 9px;
+              "
+            >
+              <div class="color" (click)="setHighlight(1);">
+                <div class="color-circle color1"></div>
+              </div>
+              <div class="color" (click)="setHighlight(2);">
+                <div class="color-circle color2"></div>
+              </div>
+              <div class="color" (click)="setHighlight(3);">
+                <div class="color-circle color3"></div>
+              </div>
+              <div class="color" (click)="setHighlight(4);">
+                <div class="color-circle color4"></div>
+              </div>
+              <div class="color" (click)="setHighlight(5);">
+                <div class="color-circle color5"></div>
+              </div>
+              <div class="color" (click)="setHighlight(6);">
+                <div class="color-circle color6"></div>
+              </div>
+              <div class="color" (click)="setHighlight(7);">
+                <div class="color-circle color7"></div>
+              </div>
+              <div class="color" (click)="setHighlight(8);">
+                <div class="color-circle color8"></div>
+              </div>
+              <div class="color" (click)="setHighlight(9);">
+                <div class="color-circle color9"></div>
+              </div>
+              <div class="color" (click)="setHighlight(10);">
+                <div class="color-circle color10"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+      <!-- </div> -->
+    </div>
+  </div>
+
+  <!-- <div style="position:relative; width:100%; height:100px; margin:5px; border:1px solid red">
+    data 1
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed"   >
+      <ion-fab-button (click)="alert(1);">
+        <img src="../../assets/images/menu-vertical.png" style="height:20px">
+      </ion-fab-button>
+      <ion-fab-list side="top">
+
+        <ion-fab-button (click)="shareContent('COPY')" class="size45">
+          <img src="../../assets/images/copy-64.png">
+        </ion-fab-button>
+
+        <ion-fab-button (click)="shareContent('SHARE')" class="size45">
+          <img src="../../assets/images/share-64.png">
+        </ion-fab-button>
+      </ion-fab-list>
+
+    </ion-fab>
+  </div>
+  <div style="position:relative; width:100%; height:100px; margin:5px; border:1px solid red">
+    data 2
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed"   >
+      <ion-fab-button >
+        <img src="../../assets/images/menu-vertical.png" style="height:20px">
+      </ion-fab-button>
+      <ion-fab-list side="top">
+
+        <ion-fab-button (click)="shareContent('COPY')" class="size45">
+          <img src="../../assets/images/copy-64.png">
+        </ion-fab-button>
+
+        <ion-fab-button (click)="shareContent('SHARE')" class="size45">
+          <img src="../../assets/images/share-64.png">
+        </ion-fab-button>
+      </ion-fab-list>
+
+    </ion-fab>
+  </div> -->
+  <audio controls #audio style="position: absolute; top: -100px">
+    <source [src]="audioid" type="audio/mpeg" />
+  </audio>
+</ion-content>

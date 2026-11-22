@@ -1,0 +1,39 @@
+<ion-card class="card">
+  <!-- Loading Spinner -->
+  @if (isLoading) {
+  <div class="quote-loading">
+    <ion-spinner name="circles"></ion-spinner>
+  </div>
+  }
+
+  <!-- Content - Only shown when not loading -->
+  @if (!isLoading) {
+  <div class="card-item-daily-items" style="min-height: 100px">
+    <h4 class="title card-item-daiy-header">
+      Daily Bible Quote
+      <ion-icon
+        name="ellipsis-horizontal"
+        class="quote-menu-icon"
+        style="
+          font-size: 24px;
+          float: right;
+          margin-top: -2px;
+          right: 20px;
+          cursor: pointer;
+          color: var(--app-text-primary);
+        "
+        (click)="showSettings()"
+      ></ion-icon>
+    </h4>
+    <div class="card-item-daily-items-padding">
+      <div style="width: 100%; text-align: center">
+        <div class="quoteoftheday" [innerHTML]="quoteoftheday"></div>
+        <div
+          class="quoteofthedayauthor"
+          [innerHTML]="quoteofthedayauthor"
+        ></div>
+      </div>
+    </div>
+  </div>
+  }
+</ion-card>

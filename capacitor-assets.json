@@ -1,0 +1,17 @@
+{
+    "assets": {
+        "iconSource": "resources/icon.png",
+        "splashSource": "resources/splash.png",
+        "iconBackgroundSource": "resources/icon.png",
+        "splashBackgroundColor": "#ffffffff"
+    },
+    "platforms": {
+        "android": {
+            "icons": true,
+            "splash": true
+        },
+        "pwa": {
+            "icons": true
+        }
+    }
+}

@@ -1,0 +1,16 @@
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">https://viviliam.com</domain>
+        <domain includeSubdomains="true">https://churchslide.com</domain>
+        <domain includeSubdomains="true">https://vvlm.in</domain>
+	<domain includeSubdomains="true">https://scripquiz.com</domain>
+    <domain includeSubdomains="true">https://viviliam.in</domain>
+    <domain includeSubdomains="true">https://viviliam.org</domain>
+    </domain-config>
+</network-security-config>

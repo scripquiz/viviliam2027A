@@ -1,0 +1,76 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <button (click)="navBack()" class="backicon"> <ion-icon style="font-size:24px;" name="arrow-back-outline"></ion-icon></button>
+    </ion-buttons>
+    <ion-title>Sign up</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content >
+  <div  [ngStyle]="{'display': formsubmitted=='0' ? 'block' : 'none'}">
+  <div style="width:100%; text-align: center;margin-top: 25px;">
+  <img src="../../assets/images/header-logo.png" class="signup-logo">
+</div>
+  <div style="padding:20px;">
+    <ion-item lines="full"  style="border-bottom: 1px solid #bababa;">
+      <ion-label position="floating">Full Name</ion-label>
+      <ion-input type="text"  [(ngModel)]="name" required></ion-input>
+    </ion-item>
+    <ion-item lines="full"  style="border-bottom: 1px solid #bababa;">
+      <ion-label position="floating">Email</ion-label>
+      <ion-input type="Email" required  [(ngModel)]="email"   ></ion-input>
+    </ion-item>
+    <!-- <ion-item lines="full"  style="border-bottom: 1px solid #e3e3e3;">
+      <ion-label position="floating">Mobile Number</ion-label>
+      <ion-input type="telephone"  [(ngModel)]="mobile" required></ion-input>
+    </ion-item>
+    <ion-item lines="full"  style="border-bottom: 1px solid #e3e3e3;">
+      <ion-label position="floating"  >City</ion-label>
+      <ion-input type="text" required [(ngModel)]="city"></ion-input>
+    </ion-item> -->
+    <ion-item lines="full" style="border-bottom: 1px solid #bababa;">
+      <ion-label position="floating">Password</ion-label>
+      <ion-input type="password" required maxlength="16" [type]="passwordType"   [(ngModel)]="password"></ion-input>
+      <ion-icon item-end [name]="passwordIcon" class="passwordIcon" (click)='hideShowPassword()'></ion-icon>
+    </ion-item>
+    <ion-item lines="full" style="border-bottom: 1px solid #bababa;">
+      <ion-label position="floating">Confirm Password</ion-label>
+      <ion-input type="password" required maxlength="16"  [type]="confirmPasswordType"  [(ngModel)]="confirmpassword"></ion-input>
+      <ion-icon item-end [name]="confirmPasswordIcon" class="passwordIcon" (click)='hideShowConfirmPassword()'></ion-icon>
+
+    </ion-item>
+    <ion-row>
+      <ion-col style="text-align: center;">
+        <button type="submit" class="btn-signin" (click)="validateData()" >Sign up</button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col  style="text-align: center; margin-top: 15px" >
+        Already have an account? <a [routerLink]="['/login']" class="small-text"  style="display:inline-block;" >Sign in</a>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col  style="text-align: center; margin-top: 15px" >
+        By clicking "Sign up" you are agreeing to the<a [routerLink]="['/more-terms']" class="small-text"  style="display:inline-block;" >Terms and Conditions</a>
+        and <a [routerLink]="['/more-private-policy']" class="small-text"  style="margin-top: 10px;display:inline-block;" >Privacy Policy.</a>
+
+      </ion-col>
+    </ion-row>
+
+  </div>
+</div>
+<div  [ngStyle]="{'display': formsubmitted=='1' ? 'block' : 'none'}" style="padding:20px;font-size:16px">
+  <span style="line-height: 1.5em;">{{ verificationCodeMessage }}</span>
+  <br>
+  <br>
+  
+    <ion-input type="text" required class="textbox-verification"  [ngStyle]="{'display': resentVerificationCode!='1' ? 'block' : 'none'}"   [(ngModel)]="verificationcode" maxlength="6"></ion-input>
+    <ion-row>
+      <ion-col style="text-align: center;">
+    <button type="submit"  class="btn-signin" (click)="validateVerificationCode()" [ngStyle]="{'display': resentVerificationCode!='1' ? 'block' : 'none'}">Submit</button>
+    <button type="submit"  class="btn-signin" (click)="this.validateData();"[ngStyle]="{'display': resentVerificationCode=='1' ? 'block' : 'none'}">Resend</button>
+    </ion-col>
+    </ion-row>
+</div>
+</ion-content>

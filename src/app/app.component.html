@@ -1,0 +1,870 @@
+<ion-app>
+  <!-- <button class="sign-in" (click)="showLogin()"  [ngStyle]="{'display': authservice.userSignedStatus==0 && authservice.showsign=='1' ? 'block' : 'none'}">Sign in</button>
+  <button class="signed-user" (click)="showSignupMenu()"  [ngStyle]="{'display': authservice.userSignedStatus!=0 && authservice.showsign=='1' ? 'block' : 'none'}">{{authservice.userFirsletter}}</button>  -->
+  <div class="{{ signupMenu }}" (click)="hideSignupMenu()">
+    <div class="myaccount-popover pop-over-shadow">
+      <div
+        class="myaccount-popovermenu-item"
+        style="right: 20px"
+        (click)="showProfile()"
+      >
+        <div class="popovermenu-icon">
+          <ion-icon name="person-outline"></ion-icon>
+        </div>
+        <div class="popovermenu-caption">
+          <span class="popovermenu-caption-text">Profile</span>
+        </div>
+      </div>
+      <div class="popovermenu-seperator">&nbsp;</div>
+      <div
+        class="myaccount-popovermenu-item"
+        style="right: 20px"
+        (click)="showChangePassword()"
+      >
+        <div class="popovermenu-icon">
+          <ion-icon name="key-outline"></ion-icon>
+        </div>
+        <div class="popovermenu-caption">
+          <span class="popovermenu-caption-text">Change Password</span>
+        </div>
+      </div>
+      <div class="popovermenu-seperator">&nbsp;</div>
+      <div
+        class="myaccount-popovermenu-item"
+        style="right: 20px"
+        (click)="doLogout()"
+      >
+        <div class="popovermenu-icon">
+          <ion-icon name="exit-outline"></ion-icon>
+        </div>
+        <div class="popovermenu-caption">
+          <span class="popovermenu-caption-text">Logout</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <ion-select  placeholder="" interface="popover" class="ion-select-overflow" #mySelect  [(ngModel)]="selectedLanguage_DailyBibleVerse" style="position:absolute; margin-top:10px;left:10px; z-index:999;background-color: #fff"  class="select" (ionChange)="setLanguage($event,11)">
+  <ion-select-option value="PROFILE">Profile</ion-select-option>
+  <ion-select-option value="CHANGEPASSWORD">Change Password</ion-select-option>
+  <ion-select-option value="LOGOUT">Logout</ion-select-option>
+</ion-select> -->
+  <div class="{{ audio_panel }}">
+    <img
+      src="../assets/images/close.png"
+      class="audio-panel-close-button"
+      (click)="hideAudioPanel()"
+    />
+    <div class="audio-drawer-title">{{ authservice.selectedBook }}</div>
+    <div class="audio-top-controls" style="z-index: 999">
+      <div class="top-controls-icon">
+        <ion-icon
+          name="volume-high-outline"
+          class="audio-control-ion-icon"
+          [ngStyle]="{
+            display:
+              isTextSpanAvailable == '1' &&
+              readaloud_selected == 'Voice Only' &&
+              authservice.paragraphMode == 0
+                ? 'inline-block'
+                : 'none'
+          }"
+          (click)="readAloud()"
+        ></ion-icon>
+        <ion-icon
+          name="volume-mute-outline"
+          class="audio-control-ion-icon audio-disabled-icon"
+          [ngStyle]="{
+            display:
+              isTextSpanAvailable == '0' || authservice.paragraphMode == 1
+                ? 'inline-block'
+                : 'none'
+          }"
+        ></ion-icon>
+        <ion-icon
+          name="reader-outline"
+          class="audio-control-ion-icon"
+          [ngStyle]="{
+            display:
+              isTextSpanAvailable == '1' && readaloud_selected == 'Highlight'
+                ? 'inline-block'
+                : 'none'
+          }"
+          (click)="readAloud()"
+        ></ion-icon>
+      </div>
+      <div class="{{ readaloud_options }} pop-over-shadow">
+        <div (click)="setReadAloud('Voice Only')" class="top-controls-menu">
+          Voice Only
+        </div>
+        <div (click)="setReadAloud('Highlight')" class="top-controls-menu">
+          Highlight
+        </div>
+      </div>
+      <div class="top-controls-icon" (click)="setRepeatState()">
+        <ion-icon name="sync-outline" class="audio-control-ion-icon"></ion-icon>
+      </div>
+      <div class="top-controls-icon" (click)="showTimer()">
+        <ion-icon
+          name="timer-outline"
+          class="audio-control-ion-icon"
+        ></ion-icon>
+      </div>
+      <div class="{{ timer_options }} pop-over-shadow">
+        <div (click)="setTimer('2 Chapters', 1, 2)" class="top-controls-menu">
+          2 Chapters
+        </div>
+        <div (click)="setTimer('3 Chapters', 2, 3)" class="top-controls-menu">
+          3 Chapters
+        </div>
+        <div (click)="setTimer('5 Chapters', 3, 5)" class="top-controls-menu">
+          5 Chapters
+        </div>
+        <div (click)="setTimer('7 Chapters', 4, 7)" class="top-controls-menu">
+          7 Chapters
+        </div>
+        <div (click)="setTimer('10 Chapters', 5, 10)" class="top-controls-menu">
+          10 Chapters
+        </div>
+        <div (click)="setTimer('Off', 0, 0)" class="top-controls-menu">Off</div>
+      </div>
+      <div class="top-controls-icon" (click)="playSpead()">
+        <ion-icon name="time-outline" class="audio-control-ion-icon"></ion-icon>
+      </div>
+      <div class="{{ speed_options }} pop-over-shadow">
+        <div (click)="setSpeed(0.75)" class="top-controls-menu">.75x</div>
+        <div (click)="setSpeed(0.9)" class="top-controls-menu">.9x</div>
+        <div (click)="setSpeed(1)" class="top-controls-menu">1x</div>
+        <div (click)="setSpeed(1.1)" class="top-controls-menu">1.1x</div>
+        <div (click)="setSpeed(1.25)" class="top-controls-menu">1.25x</div>
+        <div (click)="setSpeed(1.5)" class="top-controls-menu">1.5x</div>
+        <div (click)="setSpeed(1.75)" class="top-controls-menu">1.75x</div>
+      </div>
+    </div>
+    <div class="audio-top-controls" style="z-index: 999; margin-top: 0px">
+      <div
+        class="top-controls-icon top-controls-icon-label {{
+          isTextSpanAvailable != '1' ? 'text-disabled' : ''
+        }}"
+      >
+        {{ readaloud_selected }}
+      </div>
+      <div class="top-controls-icon top-controls-icon-label">
+        {{ repeat_state == 0 ? "Off" : "Repeat " + repeat_state }}
+      </div>
+      <div class="top-controls-icon top-controls-icon-label">
+        {{ timer_selected }}
+      </div>
+      <div class="top-controls-icon top-controls-icon-label">
+        {{ play_speed }}x
+      </div>
+    </div>
+    <div class="audio-slider" style="z-index: 1">
+      <!-- <ion-range min="0" style="padding:0px!important; left:10px; width:calc(100% - 15px); --bar-height:3px; --bar-background-active:#00CC00;--knob-background:#66cc66;--knob-size:24px"  max="{{audioMaxLength}}"   snaps="false" ticks="false" step=0.1 value="{{audioCurrentTimeSeconds}}" (touchend)="onChangeAudioPosition($event)" > -->
+      <ion-range
+        min="0"
+        class="home-audio-slider"
+        [max]="audioMaxLengthDummy"
+        snaps="false"
+        ticks="false"
+        step="0.1"
+        [value]="audioCurrentTimeSeconds"
+        (ionChange)="onChangeAudioPosition($event)"
+      >
+      </ion-range>
+
+      <span class="audio-time-labels" style="float: left; margin-left: 7px">{{
+        audioCurrentTime
+      }}</span>
+      <span class="audio-time-labels" style="float: right; margin-right: 7px">{{
+        audioDuration
+      }}</span>
+    </div>
+    <div class="audio-bottom-controls">
+      <div class="top-controls-icon-player" (click)="doNavigatePrevious()">
+        <ion-icon
+          name="play-skip-back-outline"
+          class="audio-nav-ion-icon"
+        ></ion-icon>
+      </div>
+      <div class="top-controls-icon-player">
+        <!-- <img (click)="skipBackward(15)" src="../assets/images/backward15-dotted.png" class="audio-left-nav">-->
+      </div>
+      <div
+        class="top-controls-icon-player"
+        [ngStyle]="{
+          display:
+            audioState == 'NOTSTARTED' ||
+            audioState == 'PAUSE' ||
+            audioState == 'STARTED'
+              ? 'inline-block'
+              : 'none'
+        }"
+        (click)="ContinuePayAudio()"
+      >
+        <ion-icon
+          name="caret-forward-circle-outline"
+          class="audio-play-ion-icon"
+        ></ion-icon>
+      </div>
+      <div
+        class="top-controls-icon-player"
+        [ngStyle]="{
+          display: audioState == 'PLAYING' ? 'inline-block' : 'none'
+        }"
+        (click)="PauseAudio()"
+      >
+        <ion-icon
+          name="pause-circle-outline"
+          class="audio-play-ion-icon"
+        ></ion-icon>
+      </div>
+      <div class="top-controls-icon-player">
+        <!-- <img (click)="skipForward(15)" src="../assets/images/forward15-dotted.png" class="audio-left-nav">-->
+      </div>
+      <div class="top-controls-icon-player" (click)="doNavigateNext()">
+        <ion-icon
+          name="play-skip-forward-outline"
+          class="audio-nav-ion-icon"
+        ></ion-icon>
+      </div>
+    </div>
+  </div>
+  <div class="{{ read_popovermenu }} pop-over-shadow">
+    <div class="popovermenu-item" (click)="showreaddrawer()">
+      <div class="popovermenu-icon">
+        <ion-icon name="book-outline"></ion-icon>
+      </div>
+      <div class="popovermenu-caption">
+        <span class="popovermenu-caption-text" (click)="showreaddrawer()"
+          >Reading</span
+        >
+      </div>
+    </div>
+    <div class="popovermenu-seperator">&nbsp;</div>
+    <div class="popovermenu-space">&nbsp;</div>
+    <div class="popovermenu-item" (click)="showfontdrawer()">
+      <div class="popovermenu-icon">
+        <span>A</span>
+      </div>
+      <div class="popovermenu-caption">
+        <span
+          class="popovermenu-caption-text"
+          (click)="showfontdrawer()"
+          style="top: -2px"
+          >Font</span
+        >
+      </div>
+    </div>
+    <div class="popovermenu-seperator">&nbsp;</div>
+    <div class="popovermenu-space">&nbsp;</div>
+
+    <div class="popovermenu-item" (click)="openNotesPage('Notes')">
+      <div class="popovermenu-icon">
+        <ion-icon name="create-outline"></ion-icon>
+      </div>
+      <div class="popovermenu-caption">
+        <span class="popovermenu-caption-text">Notes</span>
+      </div>
+    </div>
+    <div class="popovermenu-seperator">&nbsp;</div>
+    <div class="popovermenu-space">&nbsp;</div>
+    <div class="popovermenu-item" (click)="openNotesPage('Bookmarks')">
+      <div class="popovermenu-icon">
+        <ion-icon name="bookmarks-outline"></ion-icon>
+      </div>
+      <div class="popovermenu-caption">
+        <span class="popovermenu-caption-text">Bookmarks</span>
+      </div>
+    </div>
+    <div class="popovermenu-seperator">&nbsp;</div>
+    <div class="popovermenu-space">&nbsp;</div>
+    <div
+      class="popovermenu-item space-seperator"
+      (click)="openNotesPage('Highlights')"
+    >
+      <div class="popovermenu-icon">
+        <ion-icon name="brush-outline"></ion-icon>
+      </div>
+      <div class="popovermenu-caption">
+        <span class="popovermenu-caption-text">Highlights</span>
+      </div>
+    </div>
+  </div>
+  <div class="{{ compare_popovermenu }} pop-over-shadow">
+    <div
+      [ngStyle]="{
+        display: authservice.pageName == 'Notes' ? 'none' : 'block'
+      }"
+    >
+      <div
+        class="popovermenu-item space-seperator"
+        (click)="openNotesPage('Notes')"
+      >
+        <div class="popovermenu-icon">
+          <ion-icon name="create-outline"></ion-icon>
+        </div>
+        <div class="popovermenu-caption">
+          <span class="popovermenu-caption-text">Notes</span>
+        </div>
+      </div>
+    </div>
+    <div
+      [ngStyle]="{
+        display: authservice.pageName == 'Bookmarks' ? 'none' : 'block'
+      }"
+    >
+      <div
+        class="popovermenu-item space-seperator"
+        (click)="openNotesPage('Bookmarks')"
+      >
+        <div class="popovermenu-icon">
+          <ion-icon name="bookmarks-outline"></ion-icon>
+        </div>
+        <div class="popovermenu-caption">
+          <span class="popovermenu-caption-text">Bookmarks</span>
+        </div>
+      </div>
+    </div>
+    <div
+      [ngStyle]="{
+        display: authservice.pageName == 'Highlights' ? 'none' : 'block'
+      }"
+    >
+      <div
+        class="popovermenu-item space-seperator"
+        (click)="openNotesPage('Highlights')"
+      >
+        <div class="popovermenu-icon">
+          <ion-icon name="brush-outline"></ion-icon>
+        </div>
+        <div class="popovermenu-caption">
+          <span class="popovermenu-caption-text">Highlights</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="{{ drawer_read }}">
+    <div style="color: #000; text-align: center">
+      <div>
+        <!-- <div>
+        <div class="colL linespace">Paragraph Mode</div>
+        <div class="colR" style="text-align: right!important;color:#000">
+
+          <ion-select  interface="action-sheet"  [(ngModel)]="authservice.paragraphMode" style="margin-top:10px;background-color: #fff"  class="select" (ionChange)="setSelectedParagraphMode($event)">
+            <ion-select-option value="1">On</ion-select-option>
+            <ion-select-option value="0">Off</ion-select-option>
+          </ion-select>
+        </div>
+      </div> -->
+
+        <ion-item
+          style="
+            display: inline-block;
+            width: calc(100% - 30px);
+            margin-right: 15px;
+          "
+        >
+          <ion-select
+            label="Line Spacing"
+            interface="action-sheet"
+            placeholder="{{
+              authservice.lineSpacing == 'linespacing_1'
+                ? '1x'
+                : authservice.lineSpacing == 'linespacing_2'
+                ? '1.5x'
+                : '2x'
+            }}"
+            [(ngModel)]="authservice.lineSpacing"
+            style="background-color: #fff; position: relative; top: 5px"
+            class="select"
+            (ionChange)="setSelectedLinespacing($event)"
+          >
+            <ion-select-option value="linespacing_1">1x</ion-select-option>
+            <ion-select-option value="linespacing_2">1.5x</ion-select-option>
+            <ion-select-option value="linespacing_3">2x</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <!-- <div>
+      <div class="colL linespace">Line Spacing</div>
+      <div class="colR" style="text-align: right!important;color:#000; padding-right: 10px;">
+        <ion-select  interface="action-sheet" placeholder="{{authservice.lineSpacing == 'linespacing_1'?'1x':authservice.lineSpacing == 'linespacing_2'?'1.5x':'2x'}}"   [(ngModel)]="authservice.lineSpacing" style="background-color: #fff; position:relative;top:5px"  class="select" (ionChange)="setSelectedLinespacing($event)">
+          <ion-select-option value="linespacing_1">1x</ion-select-option>
+          <ion-select-option value="linespacing_2">1.5x</ion-select-option>
+          <ion-select-option value="linespacing_3">2x</ion-select-option>
+        </ion-select>
+      </div>
+    </div> -->
+        <!-- <div>
+    <div class="colL linespace">Verse Spacing</div>
+    <div class="colR" style="text-align: right!important;color:#000; padding-right: 10px;">
+      <ion-select   interface="action-sheet"  [(ngModel)]="authservice.verseSpacing" style="margin-top:10px;background-color: #fff"  class="select" (ionChange)="setSelectedVerseSpacing($event)">
+        <ion-select-option value="versespacing_1">1x</ion-select-option>
+        <ion-select-option value="versespacing_2">1.5x</ion-select-option>
+        <ion-select-option value="versespacing_3">2x</ion-select-option>
+      </ion-select>
+    </div>
+  </div> -->
+
+        <ion-item
+          style="
+            display: inline-block;
+            width: calc(100% - 30px);
+            margin-right: 15px;
+          "
+        >
+          <ion-select
+            label="Verse Spacing"
+            interface="action-sheet"
+            placeholder="{{
+              authservice.verseSpacing == 'versespacing_1'
+                ? '1x'
+                : authservice.verseSpacing == 'versespacing_2'
+                ? '1.5x'
+                : '2x'
+            }}"
+            [disabled]="authservice.paragraphMode == 1 ? true : false"
+            [(ngModel)]="authservice.verseSpacing"
+            style="position: relative; top: 5px; background-color: #fff"
+            class="select"
+            (ionChange)="setSelectedVerseSpacing($event)"
+          >
+            <ion-select-option value="versespacing_1">1x</ion-select-option>
+            <ion-select-option value="versespacing_2">1.5x</ion-select-option>
+            <ion-select-option value="versespacing_3">2x</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- <div>
+  <div class="colL linespace" style="position: relative;top:-5px;">Verse Spacing</div>
+  <div class="colR" style="text-align: right!important;color:#000; padding-right: 10px;">
+    <ion-select   interface="action-sheet" placeholder="{{authservice.verseSpacing == 'versespacing_1'?'1x':authservice.verseSpacing == 'versespacing_2'?'1.5x':'2x'}}"  [disabled]="(authservice.paragraphMode==1)?true:false"  [(ngModel)]="authservice.verseSpacing" style="position:relative;top:5px ;background-color: #fff"  class="select" (ionChange)="setSelectedVerseSpacing($event)">
+      <ion-select-option value="versespacing_1">1x</ion-select-option>
+      <ion-select-option value="versespacing_2">1.5x</ion-select-option>
+      <ion-select-option value="versespacing_3">2x</ion-select-option>
+    </ion-select>
+  </div>
+</div> -->
+
+        <ion-item
+          style="
+            display: inline-block;
+            width: calc(100% - 30px);
+            margin-right: 15px;
+          "
+        >
+          <ion-select
+            label="Verse Number Size"
+            interface="action-sheet"
+            placeholder="{{
+              authservice.verseNumberSize == 'versenosmall'
+                ? 'Small'
+                : authservice.verseNumberSize == 'versenomedium'
+                ? 'Medium'
+                : 'Large'
+            }}"
+            [(ngModel)]="authservice.verseNumberSize"
+            style="background-color: #fff"
+            class="select"
+            (ionChange)="setSelectedVerseSize($event)"
+          >
+            <ion-select-option value="versenosmall">Small</ion-select-option>
+            <ion-select-option value="versenomedium">Medium</ion-select-option>
+            <ion-select-option value="versenolarge">Large</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- <div>
+<div class="colL linespace" style="position: relative;top:-10px;" >Verse Number Size</div>
+<div class="colR" style="text-align: right!important;color:#000; padding-right: 10px;">
+  <ion-select  interface="action-sheet" placeholder="{{authservice.verseNumberSize == 'versenosmall'?'Small':authservice.verseNumberSize == 'versenomedium'?'Medium':'Large'}}"   [(ngModel)]="authservice.verseNumberSize" style="background-color: #fff"  class="select" (ionChange)="setSelectedVerseSize($event)">
+    <ion-select-option value="versenosmall">Small</ion-select-option>
+    <ion-select-option value="versenomedium">Medium</ion-select-option>
+    <ion-select-option value="versenolarge">Large</ion-select-option>
+  </ion-select>
+</div>
+</div> -->
+      </div>
+    </div>
+
+    <button class="drawermenu-close" (click)="hidedrawermenu()">Close</button>
+  </div>
+  <div class="{{ drawer_fonts }}">
+    <div style="color: #000; text-align: center">
+      <ion-item class="font-select-container">
+        @if (selectedFontRefreshed) {
+        <ion-select
+          placeholder="{{ selectedFontName }}"
+          interface="action-sheet"
+          [(ngModel)]="selectedFont"
+          class="select-fonts-ddl"
+          (ionChange)="setSelectedFont($event)"
+        >
+          @for (item of fontList; track item) {
+          <ion-select-option [value]="item.id">{{
+            item.font_text
+          }}</ion-select-option>
+          }
+        </ion-select>
+        }
+      </ion-item>
+      <!-- <ion-select  placeholder="{{readSelectedFont}}" *ngIf="selectedFontRefreshed" interface="action-sheet"  [(ngModel)]="readSelectedFont" style="margin-top:10px;background-color: #fff"  class="select" (ionChange)="setSelectedFont($event)">
+    <ion-select-option value="1">Tamil</ion-select-option>
+    <ion-select-option value="2">English</ion-select-option>
+  </ion-select> -->
+    </div>
+    <div class="tab-content" style="margin-top: 5px; padding: 0px !important">
+      <div style="color: #000; padding-right: 20px !important">
+        <ion-item>
+          <!-- <ion-range min=1 color="dark"  pin="true" snaps="true" max=6 step=1 value={{textSize}} ticks="true" style="padding:0px; padding-bottom: 25px;"  color="secondary">
+    </ion-range> -->
+          <ion-range
+            class="font-size-slider"
+            min="1"
+            max="5"
+            color="secondary"
+            snaps="true"
+            step="1"
+            ticks="true"
+            style="--pin-color: red"
+            value="{{ textSize }}"
+            (ionChange)="onChangeSize($event)"
+          >
+            <!-- <ion-label slot="start">-200</ion-label>
+      <ion-label slot="end">200</ion-label> -->
+          </ion-range>
+        </ion-item>
+      </div>
+      <button class="drawermenu-close" (click)="hidedrawermenu()">Close</button>
+    </div>
+  </div>
+  <div
+    class="{{ drawer }}"
+    [style.height]="authservice.currentPage == 'COMPARE' ? '140px' : ''"
+  >
+    <!-- <div class="drawershow"> -->
+    <div class="drawermenu-options">
+      <div
+        class="drawermenu {{ drawermenu_options_enabledstate }}"
+        [ngStyle]="{
+          display:
+            authservice.currentPage != 'COMPARE' ? 'inline-block' : 'none'
+        }"
+        (click)="openNotesEditPage()"
+      >
+        <ion-icon name="create-outline" class="drawermenu-icon"></ion-icon>
+        <br />Notes
+      </div>
+      <div
+        class="drawermenu {{ drawermenu_options_enabledstate }}"
+        [ngStyle]="{
+          display:
+            authservice.currentPage != 'COMPARE' ? 'inline-block' : 'none'
+        }"
+        (click)="setBookMark()"
+      >
+        <ion-icon name="bookmark-outline" class="drawermenu-icon"></ion-icon>
+        <br />Bookmark
+      </div>
+
+      <div class="drawermenu" (click)="shareContent('SHARE')">
+        <ion-icon name="share-outline" class="drawermenu-icon"></ion-icon>
+        <br />Share
+      </div>
+      <div class="drawermenu" (click)="shareContent('COPY')">
+        <ion-icon name="copy-outline" class="drawermenu-icon"></ion-icon>
+        <br />Copy
+      </div>
+    </div>
+    <div
+      class="drawermenu-highlight"
+      style="overflow: auto"
+      [ngStyle]="{
+        display: authservice.currentPage == 'COMPARE' ? 'none' : 'block'
+      }"
+    >
+      <div
+        style="
+          width: auto;
+          overflow: auto;
+          display: inline-flex;
+          padding-left: 10px;
+          padding-right: 10px;
+        "
+      >
+        <div class="color {{ colorshow1 }}" (click)="removeHighlight(1)">
+          <div class="color-circle color1">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow2 }}" (click)="removeHighlight(2)">
+          <div class="color-circle color2">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow3 }}" (click)="removeHighlight(3)">
+          <div class="color-circle color3">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow4 }}" (click)="removeHighlight(4)">
+          <div class="color-circle color4">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow5 }}" (click)="removeHighlight(5)">
+          <div class="color-circle color5">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow6 }}" (click)="removeHighlight(6)">
+          <div class="color-circle color6">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow7 }}" (click)="removeHighlight(7)">
+          <div class="color-circle color7">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow8 }}" (click)="removeHighlight(8)">
+          <div class="color-circle color8">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow9 }}" (click)="removeHighlight(9)">
+          <div class="color-circle color9">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+        <div class="color {{ colorshow10 }}" (click)="removeHighlight(10)">
+          <div class="color-circle color10">
+            <img src="../assets/images/remove.png" class="highlight-remove" />
+          </div>
+        </div>
+
+        <div class="color" (click)="setHighlight(1)">
+          <div class="color-circle color1"></div>
+        </div>
+        <div class="color" (click)="setHighlight(2)">
+          <div class="color-circle color2"></div>
+        </div>
+        <div class="color" (click)="setHighlight(3)">
+          <div class="color-circle color3"></div>
+        </div>
+        <div class="color" (click)="setHighlight(4)">
+          <div class="color-circle color4"></div>
+        </div>
+        <div class="color" (click)="setHighlight(5)">
+          <div class="color-circle color5"></div>
+        </div>
+
+        <div class="color" (click)="setHighlight(6)">
+          <div class="color-circle color6"></div>
+        </div>
+        <div class="color" (click)="setHighlight(7)">
+          <div class="color-circle color7"></div>
+        </div>
+        <div class="color" (click)="setHighlight(8)">
+          <div class="color-circle color8"></div>
+        </div>
+        <div class="color" (click)="setHighlight(9)">
+          <div class="color-circle color9"></div>
+        </div>
+        <div class="color" (click)="setHighlight(10)">
+          <div class="color-circle color10"></div>
+        </div>
+      </div>
+    </div>
+    <button class="drawermenu-close" (click)="hidedrawermenu()">Close</button>
+  </div>
+  <ion-menu
+    contentId="main-content"
+    [class]="'custom-' + orientation + ' search-settings-menu'"
+    type="overlay"
+    side="end"
+    style="background-color: #ffffff"
+  >
+    <ion-content>
+      <div
+        class="search-settings-shell"
+        style="width: 100%; height: calc(100vh); background-color: #ffffff"
+      >
+        <div
+          class="search-settings-logo"
+          style="
+            width: 100%;
+            height: 200px;
+            background-color: #f9f5ee;
+            background-image: url(../../assets/images/logo.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+          "
+        ></div>
+        <div
+          class="search-settings-title"
+          style="
+            width: 100%;
+            background-color: #e8f3ed;
+            text-align: center;
+            color: #1f5a3f;
+            padding: 5px;
+          "
+        >
+          Search Category
+        </div>
+        <div
+          class="search-settings-content"
+          style="padding: 10px; width: 100%; background-color: #ffffff"
+        >
+          <!-- <ion-select interface="action-sheet" placeholder="Select Bible"   [(ngModel)]="selectedBibleId" (ionChange)="setLanguage($event)"  style="background-color: #fff;padding-right:10px;"  class="select" > -->
+          @if (bibleRefreshed) {
+          <ion-select
+            placeholder="{{ getBibleText(selectedBibleId) }}"
+            interface="action-sheet"
+            [(ngModel)]="selectedBibleId"
+            style="
+              margin-top: 10px;
+              padding-left: 10px;
+              background-color: #fff;
+              padding-right: 10px;
+            "
+            class="searchselect search-settings-select"
+            (ionChange)="setLanguage($event)"
+          >
+            @for (item of bibleList; track item) {
+            <ion-select-option [value]="item.id"
+              >{{ item.title }} - {{ item.language }}</ion-select-option
+            >
+            }
+          </ion-select>
+          } @if (categoryRefreshed) {
+          <ion-select
+            placeholder="{{ getSelectedCategory(selectedCategory) }}"
+            interface="action-sheet"
+            [(ngModel)]="selectedCategory"
+            style="
+              margin-top: 10px;
+              padding-left: 10px;
+              background-color: #fff;
+              padding-right: 10px;
+            "
+            class="searchselect search-settings-select"
+            (ionChange)="setSearchCategory($event)"
+          >
+            @for (item of categoryList; track item) {
+            <ion-select-option [value]="item.id">{{
+              item.title
+            }}</ion-select-option>
+            }
+          </ion-select>
+          }
+
+          <div class="{{ bookFromToShow }}">
+            @if (booksFromRefreshed) {
+            <ion-select
+              placeholder="From Book"
+              interface="action-sheet"
+              placeholder="{{ getSelectedBookFrom(selectedFromBook) }}"
+              [(ngModel)]="selectedFromBook"
+              style="
+                margin-top: 10px;
+                background-color: #fff;
+                padding-right: 10px;
+                padding-left: 10px;
+              "
+              class="searchselect search-settings-select"
+              (ionChange)="setFromBookId($event)"
+            >
+              @for (item of booksFrom; track item) {
+              <ion-select-option [value]="item.bnumber">{{
+                selectedLanguage == "T"
+                  ? item.fullname_tamil
+                  : item.fullname_english
+              }}</ion-select-option>
+              }
+            </ion-select>
+            } @if (booksToRefreshed) {
+            <ion-select
+              placeholder="To Book"
+              placeholder="{{ getSelectedBookTo(selectedToBook) }}"
+              interface="action-sheet"
+              [(ngModel)]="selectedToBook"
+              style="
+                margin-top: 10px;
+                padding-left: 10px;
+                background-color: #fff;
+                padding-right: 10px;
+              "
+              class="searchselect search-settings-select"
+              (ionChange)="setToBookId($event)"
+            >
+              @for (item of booksTo; track item) {
+              <ion-select-option [value]="item.bnumber">{{
+                selectedLanguage == "T"
+                  ? item.fullname_tamil
+                  : item.fullname_english
+              }}</ion-select-option>
+              }
+            </ion-select>
+            }
+
+            <!--
+                  <ion-select style="color:#fff" label="from id" (ionChange)="setFromBookId($event)" [(ngModel)]="fromid" placeholder="Favorite Fruit">
+                    <ion-select-option value="1">1</ion-select-option>
+                    <ion-select-option value="2">2</ion-select-option>
+                    <ion-select-option value="3">3</ion-select-option>
+                    <ion-select-option value="4">4</ion-select-option>
+                    <ion-select-option value="5">5</ion-select-option>
+                    <ion-select-option value="6">6</ion-select-option>
+                  </ion-select>
+
+
+                  <ion-select style="color:#fff" label="to id"  [(ngModel)]="toid" placeholder="{{toid}}">
+                    <ion-select-option value="1">1</ion-select-option>
+                    <ion-select-option value="2">2</ion-select-option>
+                    <ion-select-option value="3">3</ion-select-option>
+                    <ion-select-option value="4">4</ion-select-option>
+                    <ion-select-option value="5">5</ion-select-option>
+                    <ion-select-option value="6">6</ion-select-option>
+                  </ion-select> -->
+          </div>
+
+          <ion-radio-group
+            [value]="searchOption"
+            [(ngModel)]="searchOption"
+            (ionChange)="setSearchOption($event)"
+            class="search-settings-radio-group"
+            style="position: relative; top: 10px"
+          >
+            <ion-item>
+              <ion-radio value="Exact" style="margin-right: 10px"
+                >Exact (உள்ளபடியே)</ion-radio
+              >
+            </ion-item>
+            <ion-item>
+              <ion-radio value="Any" style="margin-right: 10px"
+                >Any (ஏதாகிலும்)</ion-radio
+              >
+            </ion-item>
+            <ion-item>
+              <ion-radio value="All" style="margin-right: 10px"
+                >All (அனைத்தும்)</ion-radio
+              >
+            </ion-item>
+          </ion-radio-group>
+        </div>
+      </div>
+    </ion-content>
+  </ion-menu>
+  <audio controls preload="auto" #audio style="position: absolute; top: -100px">
+    <source [src]="audioid" type="audio/mpeg" />
+  </audio>
+
+  <!-- <audio controls #async_audio style="position:absolute;top:-100px;">
+        <source [src]="async_audioid" type="audio/mpeg">
+      </audio> -->
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
+</ion-app>

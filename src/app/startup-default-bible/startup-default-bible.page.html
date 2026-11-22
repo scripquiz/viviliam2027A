@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Select Default Bible</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="navBack()" class="backicon">
+        <ion-icon style="font-size: 24px" name="arrow-back-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="startup-bible-set" style="min-height: 200px">
+    @for (item of Bibles_In_Language; track item) {
+    <div (click)="setBible(item.id)">
+      <div
+        style="padding-top: 20px; padding-bottom: 10px"
+        [ngStyle]="{'display': item.language==default_language ? 'block' : 'none','background-color': item.isselected=='1' ? '#ddffd4' : 'inherit', 'color' : item.isselected ? '#000' : 'inherit'}"
+      >
+        <span class="setbible-title">{{item.title}} - {{item.language}}</span
+        ><br /><span class="setbible-description">{{item.description}}</span>
+      </div>
+    </div>
+    }
+  </div>
+  <div class="text-center padding10 margin50">
+    <span [innerHTML]="sampleVerse"></span>
+    <div [ngStyle]="{'display': sampleVerse=='' ? 'none' : 'block'}">
+      <p class="margin50" style="color: #666666">
+        {{selected_versiontext}} - {{default_language}} <br />will be your
+        default Bible. <br />You can change this in settings later.
+      </p>
+    </div>
+    <button
+      class="enabled margin20 margincenter"
+      (click)="navigateto_defaultbible()"
+      [ngStyle]="{'display': sampleVerse=='' ? 'none' : 'block'}"
+    >
+      Next
+    </button>
+  </div>
+</ion-content>

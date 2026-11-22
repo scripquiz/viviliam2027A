@@ -1,0 +1,23 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "skipLibCheck": true,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "types": []
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "www",
+        "plugins",
+        "platforms",
+        ".angular",
+        "android",
+        "dist",
+        "e2e",
+        "src/**/*.spec.ts"
+    ]
+}

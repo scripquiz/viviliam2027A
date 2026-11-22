@@ -1,0 +1,108 @@
+.backicon {
+    background-color: #fff;
+}
+
+.detail-wrap {
+    padding: 12px;
+}
+
+.language-segment {
+    margin-bottom: 12px;
+    --background: #edf3f8;
+}
+
+.language-segment ion-segment-button {
+    min-height: 34px;
+    font-size: 13px;
+}
+
+.ref-card {
+    border: 1px solid #dbe4eb;
+    border-radius: 12px;
+    background: #fff;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.ref-title {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #245474;
+}
+
+.verse-line {
+    margin: 0 0 8px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #1f2d3d;
+}
+
+.verse-line:last-child {
+    margin-bottom: 0;
+}
+
+.verse-number {
+    margin-right: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #446a8c;
+}
+
+.loading-text,
+.empty-text {
+    color: #6c7a89;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+:host-context(body.dark-theme) .backicon {
+    background-color: #2d2d2d !important;
+}
+
+:host-context(body.dark-theme) .backicon ion-icon {
+    color: #e0e0e0 !important;
+}
+
+:host-context(body.dark-theme) ion-content {
+    --background: #141b22;
+}
+
+:host-context(body.dark-theme) .detail-wrap {
+    background: #141b22;
+}
+
+:host-context(body.dark-theme) .language-segment {
+    --background: #253140;
+    border: 1px solid #364657;
+    border-radius: 10px;
+}
+
+:host-context(body.dark-theme) ion-segment-button {
+    --color: #c6d3df;
+    --color-checked: #dff4f1;
+    --background-checked: #2f8f86;
+    --indicator-color: transparent;
+}
+
+:host-context(body.dark-theme) .ref-card {
+    border-color: #435667;
+    background: #1c2530;
+}
+
+:host-context(body.dark-theme) .ref-title {
+    color: #b9dbf8;
+}
+
+:host-context(body.dark-theme) .verse-line {
+    color: #f0f5fb;
+}
+
+:host-context(body.dark-theme) .verse-number {
+    color: #c7def3;
+}
+
+:host-context(body.dark-theme) .loading-text,
+:host-context(body.dark-theme) .empty-text {
+    color: #c4d2df;
+}

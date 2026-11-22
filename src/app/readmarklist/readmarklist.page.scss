@@ -1,0 +1,327 @@
+.backicon {
+  background-color: #fff;
+}
+
+/* Dark mode for back icon */
+body.dark-theme .backicon {
+  background-color: #2d2d2d !important;
+}
+
+body.dark-theme .backicon ion-icon {
+  color: #e0e0e0 !important;
+}
+
+ion-fab {
+  ion-fab-button {
+    --border-radius: 50px !important;
+    --background: transparent;
+    --box-shadow: none;
+    --border: none;
+    --color: #000;
+    --height: 15px;
+  }
+
+  ion-button {
+    --box-shadow: none;
+  }
+
+}
+
+.markpopup-show {
+  position: absolute;
+  width: 150px;
+  padding: 10px;
+  background-color: #fff;
+  right: 0px;
+  top: 35px;
+  z-index: 999;
+  border-radius: 5px;
+  border: 1px solid rgb(204, 204, 204);
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, .2);
+  transition: all .5s ease-in-out;
+}
+
+.markpopup-hide {
+  position: absolute;
+  width: 150px;
+  padding: 10px;
+  background-color: #fff;
+  right: -250px;
+  top: 35px;
+  z-index: 999;
+  ;
+  border-radius: 5px;
+  border: 1px solid rgb(204, 204, 204);
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, .2);
+  transition: all .5s ease-in-out;
+}
+
+.notes {
+  background-color: #ebebeb;
+  padding: 10px;
+  text-align: left;
+  margin-top: 10px;
+  border-radius: 5px;
+  width: 100%;
+  overflow: auto;
+
+}
+
+.nodatainfo {
+  position: absolute;
+  font-size: 18px;
+  width: calc(100% - 15px);
+  padding: 25px;
+  top: calc(40%);
+  text-align: center;
+}
+
+.search-nav-left-marklist {
+  background-image: url(../../assets/images/leftarrow_white.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  position: relative;
+  top: 2px;
+  margin-right: 10px;
+}
+
+.search-nav-right-marklist {
+  background-image: url(../../assets/images/rightarrow_white.png);
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  margin-left: 5px;
+  position: relative;
+  top: 2px;
+  margin-left: 10px;
+}
+
+.pagesCount {
+  top: -6px;
+  position: relative;
+}
+
+.textbox_readmarklist {
+  float: right;
+  top: 5px;
+  right: 15px;
+}
+
+.buttonCss {
+
+  button.alert-button:nth-child(1) {
+    color: green;
+  }
+
+  button.alert-button:nth-child(2) {
+    color: green;
+  }
+}
+
+.circle-highlight-list {
+  font-size: 18px;
+  padding: 8px;
+  background-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  width: 18px;
+  height: 18x;
+  border: 1px solid #ddd;
+  top: 2px;
+  position: relative;
+}
+
+.readmarklist-overlay {
+  height: 100vh;
+  width: 100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  background-image: url(../../assets/images/overlay.png);
+  background-size: contain;
+  z-index: 999;
+}
+
+.audio-icon-read-marklist {
+  width: 24px;
+  display: inline-block;
+  right: 32px;
+  margin-right: 12px;
+  top: 6px;
+  position: absolute;
+}
+
+.button-normal-readmarklist {
+  border: 2px solid #777;
+  border-radius: 6px;
+  float: right;
+  padding: 5px;
+  color: #444;
+  font-size: 14px;
+  margin-right: 10px;
+
+}
+
+.marklist-input-pageno {
+  background-color: #fff;
+  height: 30px;
+  position: relative;
+  width: 50px;
+  top: 11px;
+}
+
+.nav-input-pageno {
+  background-color: #fff;
+  border: 1px solid #666666;
+  height: 30px;
+  min-height: 30px !important;
+  position: relative;
+  width: 50px;
+  top: 11px;
+  text-align: center;
+  --highlight-color-focused: none;
+
+}
+
+/* Dark mode readability for Highlights/Bookmarks page */
+body.dark-theme app-readmarklist ion-content {
+  --background: #1a1a1a !important;
+  --color: #e0e0e0 !important;
+}
+
+body.dark-theme app-readmarklist ion-toolbar,
+body.dark-theme app-readmarklist ion-title {
+  --background: #2d2d2d !important;
+  --color: #e0e0e0 !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-theme app-readmarklist div[style*="background-color:#ebebeb"],
+body.dark-theme app-readmarklist div[style*="background-color: #ebebeb"] {
+  background-color: #1a1a1a !important;
+}
+
+body.dark-theme app-readmarklist div[style*="background-color:#fff"],
+body.dark-theme app-readmarklist div[style*="background-color: #fff"] {
+  background-color: #2d2d2d !important;
+}
+
+body.dark-theme app-readmarklist div[style*="border-radius: 15px"] {
+  border: 1px solid #444 !important;
+}
+
+body.dark-theme app-readmarklist ion-select.searchselect,
+body.dark-theme app-readmarklist ion-select.select {
+  --background: #2d2d2d !important;
+  --color: #e0e0e0 !important;
+  --placeholder-color: #b0b0b0 !important;
+  background: #2d2d2d !important;
+  color: #e0e0e0 !important;
+}
+
+body.dark-theme app-readmarklist ion-select.searchselect::part(text),
+body.dark-theme app-readmarklist ion-select.select::part(text),
+body.dark-theme app-readmarklist ion-select.searchselect::part(placeholder),
+body.dark-theme app-readmarklist ion-select.select::part(placeholder),
+body.dark-theme app-readmarklist ion-select.searchselect::part(icon),
+body.dark-theme app-readmarklist ion-select.select::part(icon) {
+  color: #e0e0e0 !important;
+}
+
+body.dark-theme app-readmarklist .circle-highlight-list {
+  border-color: #666 !important;
+}
+
+body.dark-theme app-readmarklist .nodatainfo,
+body.dark-theme app-readmarklist .pagesCount,
+body.dark-theme app-readmarklist .vers,
+body.dark-theme app-readmarklist .popovermenu-caption-text,
+body.dark-theme app-readmarklist .popovermenu-icon {
+  color: #e0e0e0 !important;
+}
+
+body.dark-theme app-readmarklist .notes {
+  background-color: #2d2d2d !important;
+  color: #e0e0e0 !important;
+  border: 1px solid #444 !important;
+}
+
+body.dark-theme app-readmarklist .markpopup-show,
+body.dark-theme app-readmarklist .markpopup-hide {
+  background-color: #2d2d2d !important;
+  border: 1px solid #444 !important;
+}
+
+body.dark-theme app-readmarklist .button-normal-readmarklist {
+  color: #e0e0e0 !important;
+  border-color: #666 !important;
+}
+
+body.dark-theme app-readmarklist .nav-input-pageno,
+body.dark-theme app-readmarklist .marklist-input-pageno {
+  background-color: #2d2d2d !important;
+  color: #e0e0e0 !important;
+  border-color: #666 !important;
+}
+
+body.dark-theme app-readmarklist .vers .color1,
+body.dark-theme app-readmarklist .vers .color2,
+body.dark-theme app-readmarklist .vers .color3,
+body.dark-theme app-readmarklist .vers .color4,
+body.dark-theme app-readmarklist .vers .color5,
+body.dark-theme app-readmarklist .vers .color6,
+body.dark-theme app-readmarklist .vers .color7,
+body.dark-theme app-readmarklist .vers .color8,
+body.dark-theme app-readmarklist .vers .color9,
+body.dark-theme app-readmarklist .vers .color10 {
+  color: #1a1a1a !important;
+}
+
+body.dark-theme app-readmarklist .vers .color1 *,
+body.dark-theme app-readmarklist .vers .color2 *,
+body.dark-theme app-readmarklist .vers .color3 *,
+body.dark-theme app-readmarklist .vers .color4 *,
+body.dark-theme app-readmarklist .vers .color5 *,
+body.dark-theme app-readmarklist .vers .color6 *,
+body.dark-theme app-readmarklist .vers .color7 *,
+body.dark-theme app-readmarklist .vers .color8 *,
+body.dark-theme app-readmarklist .vers .color9 *,
+body.dark-theme app-readmarklist .vers .color10 * {
+  color: inherit !important;
+}
+
+/* Keep list cards readable when card background is white in dark mode */
+body.dark-theme app-readmarklist .readmark-card {
+  background-color: #ffffff !important;
+  color: #1a1a1a !important;
+  border-color: #d9d9d9 !important;
+}
+
+body.dark-theme app-readmarklist .readmark-card,
+body.dark-theme app-readmarklist .readmark-card span,
+body.dark-theme app-readmarklist .readmark-card div,
+body.dark-theme app-readmarklist .readmark-card p,
+body.dark-theme app-readmarklist .readmark-card a,
+body.dark-theme app-readmarklist .readmark-card .vers,
+body.dark-theme app-readmarklist .readmark-card .vers * {
+  color: #1a1a1a !important;
+}
+
+body.dark-theme app-readmarklist .readmark-card .notes {
+  background-color: #f1f1f1 !important;
+  color: #1a1a1a !important;
+  border: 1px solid #d9d9d9 !important;
+}
+
+body.dark-theme app-readmarklist .readmark-card .markpopup-show,
+body.dark-theme app-readmarklist .readmark-card .markpopup-hide {
+  background-color: #f7f7f7 !important;
+  border: 1px solid #d9d9d9 !important;
+}

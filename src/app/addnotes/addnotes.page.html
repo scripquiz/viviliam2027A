@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Notes</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="goBack()" class="backicon"> <ion-icon style="font-size:24px;" name="arrow-back-outline"></ion-icon></button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <button (click)="saveNotes()" class="button-save">SAVE</button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="notes-content" [ngStyle]="{'display': isContentLoaded==1? 'block' : 'none'}"  >
+    <div class="vers" style="margin-top:0px!important;line-height: 1.4em;padding-left:0px!important; padding-right: 0px!important;margin-bottom:10px;;" [innerHTML]="selected_fornotes_versData"></div>
+
+    <span style="font-weight:600;margin-bottom:20px;" maxlength="250">{{selected_fornotes_bookname}} {{selected_fornotes_cnumber}}:{{selected_fornotes_vnumber}} ( {{selected_fornotes_bible}} )</span>
+    <ion-textarea type="text" placeholder="Type your notes here" [(ngModel)]="notes" class="notes-textbox" rows="6" maxlength="500" ></ion-textarea>
+    <span style="display:inline-block;padding-top:10px">Max 500 chars</span>
+
+  </div>
+
+</ion-content>

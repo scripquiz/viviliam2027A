@@ -1,0 +1,19 @@
+<ion-content>
+  <div class="container-getstrted">
+    <div class="logo">
+
+    </div>
+    <div class="initize">
+      <button (click)="fillDatabase()" class="btn">GET STARTED</button>
+      <button (click)="navigateToHome()" class="btn">ENTER</button>
+      <div class="title">{{readyMesasge}}</div>
+      <div class="progress-outer">
+
+        <div class="progress-inner" [style.width]="progress + '%'">
+          {{progress}}%
+        </div>
+
+      </div>
+    </div>
+  </div>
+</ion-content>

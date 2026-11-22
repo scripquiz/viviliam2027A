@@ -1,0 +1,139 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<ion-header>
+    <ion-toolbar > 
+      <ion-buttons slot="end">
+      
+      <button ion-button="" icon-only="" style="background-color:#fff; ">
+        <!-- <ion-icon ios="ios-settings" md="md-settings" (click)="openSettings()"></ion-icon> -->
+        
+          <ion-icon name="menu" style="top:1px;font-size:28px;position:relative;" (click)="showhidePopoverMenu()">
+        </ion-icon>
+      
+        </button> 
+        
+    </ion-buttons>
+    <div [class]="'landscape' + '-header'">
+    
+    
+      <span class="bookTitle"  (click)="openBookSelector()">{{authservice.selectedBook}}</span>
+              
+    
+      <span class="versionSelector " (click)="openSetBible()">{{selectedVersion}}</span>
+  </div> 
+    
+      
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [class]="'theme' + selectedTheme" [scrollEvents]="true" (ionScroll)="handleScroll($event)">
+
+ 
+<!-- <div class="nav_bottom" [ngStyle]="{'display': showBottomNav==1 ? 'block' : 'none'}" > -->
+<div class="nav_bottom {{ showBottomNav }}" >
+  <div class= "page_nav_arrow-left  {{showPrevNav}}" (click)="gotoPrevVers()">
+    <img src="../../assets/images/nav-left-dotted.png" class="nav-icons">
+  </div>
+  <div class= "verse_audio" >
+    <img src="../../assets/images/speaker.png" class="nav-icons-play" [ngStyle]="{'display': appComponent.audioState!='PLAYING' && is_audio_available==1 ? 'inline-block' : 'none'}" (click)="showAudioPanel()">
+    <img src="../../assets/images/verse-audio-playing.png" class="nav-icons-play"  [ngStyle]="{'display': appComponent.audioState=='PLAYING' && is_audio_available==1 ? 'inline-block' : 'none'}"  (click)="showAudioPanel()">
+  </div>
+  <div class= "page_nav_arrow-right {{showNextNav}}" (click)="gotoNextVers()">
+    <img src="../../assets/images/nav-right-dotted.png" class="nav-icons">
+  </div>
+</div>
+<div style="width:100%;height:10px">&nbsp;</div>
+  <div [class]="'container-Read ' + orientation + ' ' + paragraphModeClass + ' ' +   + ' theme' + selectedTheme" style="padding-bottom: calc(50vh);position: relative;top:15px;">
+    <!-- <div id="item{{ verseItem.vnumber }}" [class]="textSizeCSS" *ngFor="let verseItem of verseList; let i=index" tappable text-wrap (click)=selectItem(i,verseItem.isSelected) -->
+    <div id="item{{ verseItem.vnumber }}" [class]="'zoom'+authservice.textSize + ' ' + authservice.globalfont" *ngFor="let verseItem of authservice.verseList; let i=index" 
+     [ngStyle]="{'background-color': verseItem.isSelected ? '#eee' : 'inherit', 'color' : verseItem.isSelected ? '#000' : 'inherit'}">
+      <p [class]="'vers ' +  authservice.verseSpacing + ' voiceover' + verseItem.voiceover"  id="versenumber{{ verseItem.vnumber }}"  >
+        <ion-icon name="bookmark" style="color:red; position:relative;top:3px"  [ngStyle]="{'display': verseItem.bookMark=='1' && authservice.paragraphMode!='1' ? 'inline-block' : 'none'}"  ></ion-icon>
+        <span [class]="'verse ' + authservice.lineSpacing + ' ' + font + ' ' + ' ' + ' vers_' + (verseItem.index + 1)">
+        <span [class]="'versno '+ authservice.verseNumberSize" [ngStyle]="{'display':(authservice.versenumberShow=='1' && verseItem.vnumber!='0' && verseItem.vnumber) ?'inline-block':'none'}">{{verseItem.vnumber}}</span>
+        <span class="{{verseItem.textHighlight}}" tappable text-wrap (click)=selectItem(i,verseItem.isSelected) [innerHTML]="verseItem.verseData"></span>
+        <ion-icon   id="notes_pop{{verseItem.vid}}" name="create" style="color:#800080; position:relative; top:3px;font-size:18px; margin-left:5px;"  [ngStyle]="{'display': verseItem.notes!='' ? 'inline-block' : 'none'}" (click)="showNotes(verseItem.vid, verseItem.vnumber)"></ion-icon>
+        </span>
+      </p>
+      <div id="notes_pop" class="notes-pop"  [ngStyle]="{'display': show_notes_pop==1 && verseItem.vid == selected_verse_notes_id ? 'block' : 'none'}">
+        <ion-row>
+          <ion-col class="notes-pop-title">Notes</ion-col>
+          <ion-col class="notes-pop-image">
+            <img src="../../assets/images/edit.png" class="notes-pop-edit" (click)="showNotesEdit();">
+            <img src="../../assets/images/close.png" (click)="hideNotesPop()" >
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <div class="notes-pop-content verse">
+              {{(verseItem.vid == selected_verse_notes_id) ? selected_verse_notes : "" }}
+            </div>
+          </ion-col>
+        </ion-row>
+       
+      </div>
+    </div>
+    <div class="chapterMode {{hideIfVerseMode}}"> 
+      
+      <table style="margin-left: auto; margin-right: auto;">
+        <tr>
+          <td >
+             <div class="enabled" (click)="loadPrevVerse()">Prev</div>
+            
+
+          </td>
+          <td><div class=" enabled loadfullchapter" (click)="loadChapter()">Full Chapter</div></td>
+          <td><div class=" enabled"  (click)="loadNextVerse()">Next</div></td>
+        </tr>
+    </table>
+    </div>
+  </div>
+  <!-- <ion-fab vertical="bottom" horizontal="end" slot="fixed"  [ngStyle]="{'display': selection ? 'block' : 'none'}">
+    <ion-fab-button mode="md">
+    <img src="../../assets/images/3dot-64.png">
+    </ion-fab-button> 
+    <ion-fab-list side="top">
+     
+      <ion-fab-button (click)="shareContent('COPY')" class="size45">
+        <img src="../../assets/images/copy-64.png">
+      </ion-fab-button>
+      
+      <ion-fab-button (click)="shareContent('SHARE')" class="size45">
+        <img src="../../assets/images/share-64.png">
+      </ion-fab-button>
+      </ion-fab-list>
+      
+    </ion-fab> -->
+  <!-- <button class="read-shareBtn" (click)="shareContent()" >
+    <img src="../../assets/images/share.png" style="z-index: 999; position:fixed;right:20px;bottom:20px" [ngStyle]="{'display': selection ? 'block' : 'none'}">
+  </button> -->
+  <div class="audio-overlay" [ngStyle]="{'display': isAudioDisplay==1 ? 'block' : 'none'}" (click)="hideAudio()">
+  <div class="audio" >
+    <audio controls #audio>
+      <source [src]="audioid" type="audio/mpeg">
+    </audio>
+  </div>
+  </div>
+  <div class="voiceoverplayingverse" [ngStyle]="{'display': voiceOverState==1 ? 'block' : 'none'}">{{voice_over_current}}</div>
+  <!-- <div class="notes-pop-overlay"  [ngStyle]="{'display': show_notes_pop==1 ? 'block' : 'none'}">
+  <div id="notes_pop" class="notes-pop"  [ngStyle]="{'display': show_notes_pop==1 ? 'block' : 'none'}">
+    <ion-row>
+      <ion-col class="notes-pop-title">Notes</ion-col>
+      <ion-col class="notes-pop-image">
+        <img src="../../assets/images/edit.png" class="notes-pop-edit" (click)="showNotesEdit();">
+        <img src="../../assets/images/close.png" (click)="hideNotesPop()" >
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <div class="notes-pop-content verse">
+          {{selected_verse_notes}}
+        </div>
+      </ion-col>
+    </ion-row>
+   
+  </div>
+  </div> -->
+  
+  
+</ion-content>

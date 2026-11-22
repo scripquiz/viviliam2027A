@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ selectedTitle || 'Life Events' }}</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="navBack()" class="backicon">
+        <ion-icon style="font-size: 24px" name="arrow-back-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="detail-wrap">
+    <ion-segment
+      class="language-segment"
+      [value]="selectedLanguage"
+      (ionChange)="onLanguageChange($event.detail.value)"
+    >
+      <ion-segment-button value="ta">
+        <ion-label>தமிழ்</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="en">
+        <ion-label>English</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    @if (isLoadingVerses) {
+    <div class="loading-text">Loading verses...</div>
+    } @if (!isLoadingVerses && sections.length === 0) {
+    <div class="empty-text">No verses found for this event.</div>
+    } @for (section of sections; track section) {
+    <div class="ref-card">
+      <p class="ref-title">{{ section.referenceLabel }}</p>
+      @for (verse of section.verses; track verse) {
+      <p class="verse-line">
+        @if (verse.vnumber && verse.vnumber !== 0) {
+        <span class="verse-number">{{ verse.vnumber }}</span>
+        }
+        <span [innerHTML]="verse.vers"></span>
+      </p>
+      }
+    </div>
+    }
+  </div>
+</ion-content>

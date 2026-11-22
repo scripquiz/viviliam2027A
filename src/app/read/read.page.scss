@@ -1,0 +1,730 @@
+body {
+  background-color: #fff !important;
+}
+
+
+.container-read {
+  // width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+  margin-top: 0;
+  padding-bottom: 400px;
+  // padding-bottom: calc(50vh);position: relative;top:5px;
+}
+
+.paragraph {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+.normal {
+  padding-left: 0px;
+  padding-right: 0px;
+
+}
+
+.read-VERSE-portrait {
+  padding-top: 9px;
+}
+
+.read-VERSE-landscape {
+  padding-top: 18px;
+}
+
+.read-CHAPTER-portrait {
+  padding-top: 18px;
+}
+
+.read-CHAPTER-landscape {
+  padding-top: 18px;
+}
+
+.container-Read-content {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding-bottom: 450px;
+
+
+}
+
+.vers {
+  margin: 0px;
+  text-align: left;
+  padding-top: 0px;
+
+  padding-left: 15px;
+  padding-right: 15px;
+  line-height: 1.75
+}
+
+.versParagraph {
+  margin: 0px;
+  text-align: left;
+  padding-top: 0px;
+  padding-bottom: 5px;
+  padding-right: 0px;
+
+
+}
+
+
+
+
+/* Navigation */
+.book-navigation {
+  width: 100%;
+
+}
+
+.nav-columnR {
+  font-size: 12px;
+
+  padding-left: 10px;
+  padding-right: 10px;
+  background-color: #cccccc;
+  display: inline-block;
+  width: 30px;
+  height: 35px;
+  margin-left: 2px;
+  text-align: left;
+  position: fixed;
+  top: calc(100vh - 100px);
+  left: calc(50%);
+
+
+}
+
+.seperator {
+  width: 50%;
+  border-bottom: 1px solid #c1c1c1;
+  margin-left: auto;
+  height: 5px;
+  margin-right: auto;
+}
+
+.nav-left {
+  text-align: left;
+}
+
+.setposR {
+  position: relative;
+  top: 7px;
+  left: -13px;
+  color: rgba(0, 0, 0, .7);
+}
+
+.setposP {
+  position: relative;
+  top: -6px;
+  left: -3px;
+}
+
+.setposL {
+  position: relative;
+  top: 4px;
+  left: 2px;
+  font-size: 24px !important;
+  color: rgba(0, 0, 0, .7);
+}
+
+.play {
+  text-align: center;
+  margin-left: 3px;
+}
+
+.nav-left {
+  text-align: right;
+}
+
+.showfull {
+  opacity: 1;
+}
+
+.showopacity {
+  opacity: .3;
+}
+
+.showtitle {
+  font-size: 11px;
+  color: #555;
+  text-align: center;
+  line-height: 1.6;
+  padding-bottom: 8px;
+}
+
+.showthebrew {
+  text-align: center;
+  font-weight: 600;
+  font-family: sans-serif;
+  color: #333333;
+  display: inline-block;
+  width: 100%;
+
+}
+
+.arial {
+  font-family: arial !important;
+
+}
+
+.times {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+.Kavivanar {
+  font-family: Kavivanar !important;
+}
+
+.NotoSerif {
+  font-family: NotoSerif !important;
+}
+
+.opacityshow {
+  opacity: 1;
+  transition: 1s;
+}
+
+.opacityhide {
+  opacity: 0;
+  transition: 1s;
+}
+
+.voiceover0 {
+  padding-left: 15px;
+}
+
+
+
+.voiceover1 {
+  background-color: #fdeded;
+  border-left: 5px solid #e51d25 !important;
+  border-top-right-radius: 15px; // Rounded top right corner
+  border-bottom-right-radius: 15px; // Rounded bottom right corner
+
+}
+
+.voiceover1 {
+  padding-left: 10px;
+}
+
+
+/*   .voiceover0
+  {
+    background-color:none;
+    padding-left: 20px;
+  } */
+.voiceoverplayingverse {
+  position: fixed;
+  left: calc(50% - 62px);
+  width: 124px;
+  height: 21px;
+  background-color: #fff;
+  font-size: 12px;
+  text-align: center;
+  color: red;
+  top: calc(100vh - 79px);
+  padding: 2px;
+  border: 1px solid red;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px rgb(0 0 0 / 20%);
+
+}
+
+.notes-pop {
+  width: calc(100% - 30px);
+  height: 150px;
+  background-color: #f2f2f2;
+  position: absolute;
+  margin: 15px;
+  border-radius: 5px;
+  margin-top: -5px;
+  z-index: 999;
+}
+
+.notes-pop-title {
+  width: calc(100%);
+  font-size: 18px;
+  height: 40px;
+  padding-top: 10px;
+  background-color: #e4e4e4;
+  padding-left: 15px;
+  border-top-left-radius: 10px;
+  display: inline-block;
+  position: absolute;
+  border-top-right-radius: 10px;
+}
+
+.notes-pop-image {
+  text-align: right;
+}
+
+.notes-pop-image img {
+  padding-right: 10px;
+  padding-left: 10px;
+  top: 3px;
+  position: relative;
+
+}
+
+.notes-pop-content {
+  width: calc(100% - 10px);
+  overflow: auto;
+  height: 90px;
+  margin-left: 10px;
+  padding-right: 10px;
+  line-height: 1.3em;
+  position: relative;
+}
+
+.notes-pop-edit {
+  position: relative;
+
+}
+
+.read-audio-skip {
+  height: 27px;
+  width: 27px;
+}
+
+.fullscreen0 {
+  position: fixed;
+  width: 32px;
+  right: 15px;
+  margin-top: 15px;
+  z-index: 999;
+
+}
+
+.fullscreen1 {
+  position: fixed;
+  width: 32px;
+  right: 15px;
+  margin-top: 15px;
+  z-index: 999;
+  top: 5px;
+}
+
+.left-nav-chapter {
+  position: fixed;
+  left: 15px;
+  top: calc(100vh - 105px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.left-nav-verse {
+  position: fixed;
+  left: 85px;
+  // top: calc(50vh - 38px);
+  top: calc(100vh - 113px);
+  z-index: 999;
+  width: 45px;
+}
+
+.left-nav-verse-portrait {
+  position: fixed;
+  left: calc(50% - 75px);
+  top: calc(100vh - 105px);
+  z-index: 999;
+  width: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.right-nav-chapter {
+  position: fixed;
+  right: 15px;
+  // top:calc(50vh - 48px);
+  top: calc(100vh - 105px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.right-nav-verse {
+  position: fixed;
+  left: calc(100% - 125px);
+  // top: calc(50vh - 37px);
+  top: calc(100vh - 113px);
+  z-index: 999;
+  width: 45px;
+}
+
+.right-nav-verse-portrait {
+  position: fixed;
+  left: calc(50% + 75px);
+  top: calc(100vh - 105px);
+  z-index: 999;
+  width: 27px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.verse_audio_ {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(100vh - 105px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.book-title-on-maximize {
+  position: fixed;
+  top: 0px;
+  left: -28px;
+  padding: 5px;
+  text-align: center;
+  width: 100%;
+  background-color: #fff;
+  z-index: 1;
+}
+
+/* Header transition fixes */
+app-read ion-content.header-hidden {
+  --offset-top: 0 !important;
+  transition: margin-top 0.3s ease-out;
+}
+
+app-read ion-header {
+  transition: top 0.3s ease-out;
+  z-index: 1000;
+  position: fixed;
+  width: 100%;
+}
+
+/* This ensures smooth transition when header shows/hides */
+app-read ion-content {
+  --padding-top: calc(51px + var(--ion-safe-area-top, 0px));
+  transition: margin-top 0.3s ease-out;
+}
+
+app-read [id^='item'],
+app-read [id^='versenumber'] {
+  scroll-margin-top: calc(65px + var(--ion-safe-area-top, 0px));
+}
+
+/* Search Result Banner */
+.search-result-banner {
+  background-color: rgba(241, 241, 241, 0.95);
+  padding: 10px 15px;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  /* Just below header z-index */
+  width: 100%;
+}
+
+.search-ref {
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+.back-to-reading-btn {
+  background-color: #e51d25;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.showred {
+  color: #cb4335;
+}
+
+/* Dark mode rule for center button alignment - global scope */
+app-read ion-content.dark-mode .verse_audio_ {
+  height: 35px !important;
+}
+
+app-read ion-content.dark-mode .enabled.loadfullchapter {
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Dark Mode Styles for Read Page */
+ion-content.dark-mode {
+  --background: #1a1a1a;
+  --color: #e0e0e0;
+
+  body {
+    background-color: #1a1a1a !important;
+  }
+
+  .container-read {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  .container-Read-content {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  /* Verse styling in dark mode */
+  .vers,
+  .versParagraph {
+    color: #e0e0e0;
+  }
+
+  /* Verse numbers in dark mode */
+  .versno,
+  .versenosmall,
+  .versenomedium,
+  .versenolarge {
+    color: #bb86fc;
+  }
+
+  /* Book title in dark mode */
+  .bookTitle {
+    color: #e0e0e0;
+  }
+
+  /* Version selector in dark mode */
+  .versionSelector {
+    color: #bb86fc;
+  }
+
+  /* Chapter title in dark mode */
+  .chaptTitle {
+    color: #e0e0e0;
+    background-color: #2d2d2d;
+  }
+
+  /* Selection highlight in dark mode */
+  .vers.selected,
+  .versParagraph.selected {
+    background-color: #3a3a3a !important;
+    color: #ffffff !important;
+  }
+
+  /* Notes popup in dark mode */
+  .notes-popup {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+  }
+
+  /* Highlighted verses in dark mode */
+  .highlighted {
+    background-color: #4a4a2a;
+  }
+
+  /* Audio voiceover highlighting in dark mode */
+  .voiceover1 {
+    background-color: #2d4a2d !important;
+    border-left: 5px solid #4ade80 !important;
+    color: #e0e0e0 !important;
+  }
+
+  /* Red letter (Jesus words) in dark mode - Light red/pink for better readability */
+  .showred {
+    color: #ffb3ba !important;
+  }
+
+  /* Navigation buttons in dark mode */
+  .left-nav-chapter,
+  .right-nav-chapter,
+  .left-nav-verse-portrait,
+  .right-nav-verse-portrait {}
+
+  /* Make navigation images visible in dark mode by inverting colors */
+  img.nav-icons,
+  img.nav-icons-play,
+  img.read-audio-skip,
+  .verse_audio_ img {
+    filter: invert(1) brightness(1.2);
+    display: block;
+  }
+
+  /* Ensure navigation buttons are visible */
+  .left-nav-verse,
+  .right-nav-verse,
+  .left-nav-verse-portrait,
+  .right-nav-verse-portrait {
+    img {
+      filter: invert(1) brightness(1.2);
+    }
+  }
+
+  /* Search result banner in dark mode */
+  .search-result-banner {
+    background-color: rgba(45, 45, 45, 0.95);
+    border-bottom: 1px solid #444;
+    color: #e0e0e0;
+  }
+
+  .search-ref {
+    color: #b0b0b0;
+  }
+
+  .back-to-reading-btn {
+    background-color: #bb2124;
+    color: white;
+  }
+
+  .verse_audio_ {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Full chapter button with enabled class in dark mode */
+  .enabled.loadfullchapter {
+    background-color: #3a3a3a !important;
+    color: #ffffff !important;
+    border: 1px solid #666 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    vertical-align: middle !important;
+    font-size: 14px !important;
+    border-radius: 5px !important;
+    height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .enabled {
+    background-color: #3a3a3a !important;
+    color: #ffffff !important;
+    border: 1px solid #666 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    vertical-align: middle !important;
+    font-size: 14px !important;
+    border-radius: 5px !important;
+  }
+
+  /* Bracket contents in dark mode */
+  .showBracketContents {
+    color: #a0a0a0;
+  }
+
+  /* Keep highlighted verse text readable in dark mode (light highlight backgrounds). */
+  .color1,
+  .color2,
+  .color3,
+  .color4,
+  .color5,
+  .color6,
+  .color7,
+  .color8,
+  .color9,
+  .color10 {
+    color: #1a1a1a !important;
+  }
+
+  .color1 *,
+  .color2 *,
+  .color3 *,
+  .color4 *,
+  .color5 *,
+  .color6 *,
+  .color7 *,
+  .color8 *,
+  .color9 *,
+  .color10 * {
+    color: inherit !important;
+  }
+
+  .color1 .showred,
+  .color2 .showred,
+  .color3 .showred,
+  .color4 .showred,
+  .color5 .showred,
+  .color6 .showred,
+  .color7 .showred,
+  .color8 .showred,
+  .color9 .showred,
+  .color10 .showred {
+    color: #8b1e2d !important;
+  }
+
+  .color1 .showBracketContents,
+  .color2 .showBracketContents,
+  .color3 .showBracketContents,
+  .color4 .showBracketContents,
+  .color5 .showBracketContents,
+  .color6 .showBracketContents,
+  .color7 .showBracketContents,
+  .color8 .showBracketContents,
+  .color9 .showBracketContents,
+  .color10 .showBracketContents {
+    color: #4a4a4a !important;
+  }
+
+  /* Any white backgrounds should become dark */
+  div[style*="background-color: #fff"],
+  div[style*="background-color: white"],
+  div[style*="background-color:#fff"],
+  div[style*="background-color:white"] {
+    background-color: #1a1a1a !important;
+  }
+
+  /* Override inline styles for selected/highlighted verses */
+  div[style*="background-color: #eee"],
+  div[style*="background-color:#eee"] {
+    background-color: #3a3a3a !important;
+  }
+
+  div[style*="color: #000"],
+  div[style*="color:#000"],
+  div[style*="color: black"],
+  div[style*="color:black"] {
+    color: #ffffff !important;
+  }
+
+  /* Specific fix for verse paragraphs with inline styles */
+  p[style*="background-color"],
+  .vers[style*="background-color"],
+  .versParagraph[style*="background-color"] {
+
+    &[style*="#fff"],
+    &[style*="white"],
+    &[style*="#eee"] {
+      background-color: #3a3a3a !important;
+      color: #ffffff !important;
+    }
+  }
+
+  /* Paragraphs and text containers */
+  p,
+  span,
+  div {
+    &:not([class*="icon"]):not([class*="button"]) {
+      color: inherit;
+    }
+  }
+
+  /* Ensure smooth transition when toggling */
+  * {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}

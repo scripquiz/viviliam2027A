@@ -1,0 +1,101 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>More</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="about-container">
+
+    <div class="other-links">
+      <p>
+        <ion-icon name="information-circle-outline" class="more-item-icon"></ion-icon>
+        <span>Version</span>
+        <span style="float:right;margin-right: 10px;position:relative;top:10px;">{{appversionText}}</span>
+      </p>
+      <p (click)="openMore('more-private-policy')">
+        <ion-icon name="shield-outline" class="more-item-icon"></ion-icon>
+        <span>Privacy Policy</span>
+      </p>
+      <p (click)="openReport()">
+        <ion-icon name="bug-outline" class="more-item-icon"></ion-icon>
+        <span>Report Error</span>
+      </p>
+      <p (click)="openContact()">
+        <ion-icon name="mail-outline" class="more-item-icon"></ion-icon>
+        <span>Contact</span>
+      </p>
+
+      <p (click)="openSettings()">
+        <ion-icon name="settings-outline" class="more-item-icon"></ion-icon>
+        <span>Settings</span>
+      </p>
+      <!--         <p (click)="openReadMarkList('Notes')">
+          <ion-icon name="create-outline" class="more-item-icon"></ion-icon>
+          <span>Notes</span>
+        </p> 
+        <p (click)="openReadMarkList('Bookmarks')">
+          <ion-icon name="bookmarks-outline" class="more-item-icon"></ion-icon>
+          <span>Bookmarks</span>
+        </p> 
+        <p (click)="openReadMarkList('Highlights')">
+          <ion-icon name="brush-outline" class="more-item-icon"></ion-icon>
+          <span>Highlights</span>
+        </p>  -->
+
+      <p (click)="rateApp()">
+        <ion-icon name="star-half-outline" class="more-item-icon"></ion-icon>
+        <span>Rate Viviliam</span>
+      </p>
+      <p (click)="shareApp()">
+        <ion-icon name="share-social-outline" class="more-item-icon"></ion-icon>
+        <span>Share Viviliam</span>
+
+      </p>
+      <!--         <p (click)="openChangelog()">
+          <ion-icon name="document-text-outline" class="more-item-icon"></ion-icon>
+          <span>Changelog</span>
+          
+        </p> -->
+      <p (click)="openYouTube()">
+        <ion-icon name="logo-youtube" class="more-item-icon"></ion-icon>
+        <span>YouTube</span>
+      </p>
+
+      <p (click)="openWhatsApp()">
+        <ion-icon name="chatbubble-outline" class="more-item-icon"></ion-icon>
+        <span>WhatsApp</span>
+
+      </p>
+
+      <p (click)="openMore('bible-topics')">
+        <ion-icon name="list-outline" class="more-item-icon"></ion-icon>
+        <span>Bible Topics</span>
+      </p>
+
+      <p (click)="openMore('life-events')">
+        <ion-icon name="sparkles-outline" class="more-item-icon"></ion-icon>
+        <span>Life Events</span>
+      </p>
+
+
+    </div>
+
+  </div>
+  <div class="backup-overlay" [ngStyle]="{'display': isbackup==1? 'block' : 'none'}">
+    <div class="backup-progress-box">
+      <div class="progress-outer ">
+
+        <div class="progress-inner" [style.width]="progress + '%'">
+          {{progress}}%
+        </div>
+
+
+      </div>
+      <div class="buttons-bottom">
+        <button class="btn-start" (click)="backupToCloud()">Start</button>
+        <button class="btn-cancel" (click)="cancelBackup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</ion-content>

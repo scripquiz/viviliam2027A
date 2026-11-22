@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Select Bible</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="goBack()" class="backicon">
+        <ion-icon
+          style="font-size: 24px; color: #333333"
+          name="arrow-back-outline"
+        ></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="setbiblecontainer">
+    @for (item of bibleListTamil; track item) {
+    <div (click)="setBible(item.id, item.title, item.language)">
+      <span class="setbible-title">{{item.title}} - {{item.language}}</span>
+      <ion-icon
+        name="volume-high-outline"
+        class="audio-icon-set"
+        [ngStyle]="{'display': item.isaudioavailable=='1' ? 'inline-block' : 'none'}"
+      ></ion-icon>
+      <br /><span class="setbible-description">{{item.description}}</span>
+      <div class="setbibleseperator">&nbsp;</div>
+    </div>
+    } @for (item of bibleListEnglish; track item) {
+    <div (click)="setBible(item.id, item.title, item.language)">
+      <span class="setbible-title">{{item.title}} - {{item.language}}</span>
+      <ion-icon
+        name="volume-high-outline"
+        class="audio-icon-set"
+        [ngStyle]="{'display': item.isaudioavailable=='1' ? 'inline-block' : 'none'}"
+      ></ion-icon>
+      <br /><span class="setbible-description">{{item.description}}</span>
+      <div class="setbibleseperator">&nbsp;</div>
+    </div>
+    }
+  </div>
+</ion-content>

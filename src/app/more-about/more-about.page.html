@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>About</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="navBack()" class="backicon"> <ion-icon style="font-size:24px;" name="arrow-back-outline"></ion-icon></button>
+    </ion-buttons>
+  
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="about-container">
+        
+
+  <div class="other-links" >
+    <!-- <p (click)="openMorePage('credits')">
+      <ion-icon name="information-circle-outline" class="more-item-icon"></ion-icon>
+      <span>Credits</span>
+    </p>
+    <p (click)="openMorePage('terms')">
+      <ion-icon name="information-circle-outline" class="more-item-icon"></ion-icon>
+
+      <span>Terms and Conditions</span>
+    </p> -->
+   
+    <p (click)="openMore('more-private-policy')">
+      <ion-icon name="information-circle-outline" class="more-item-icon"></ion-icon>
+
+      <span>Privacy Policy</span>
+    </p>
+   
+    <p >
+      <ion-icon name="information-circle-outline" class="more-item-icon"></ion-icon>
+      <span>Version</span>
+      <span style="float:right;margin-right: 10px;position:relative;top:10px;">{{appversionText}}</span>
+      
+    </p>
+  
+   
+   
+    
+  </div>
+
+</div>
+</ion-content>

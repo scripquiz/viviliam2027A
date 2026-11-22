@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Life Events</ion-title>
+    <ion-buttons slot="start">
+      <button (click)="navBack()" class="backicon">
+        <ion-icon style="font-size: 24px" name="arrow-back-outline"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="life-events-wrap">
+    <div class="toolbar-row">
+      <ion-segment
+        class="language-segment"
+        [value]="selectedLanguage"
+        (ionChange)="onLanguageChange($event.detail.value)"
+      >
+        <ion-segment-button value="ta">
+          <ion-label>தமிழ்</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="en">
+          <ion-label>English</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <div class="events-grid">
+      @for (item of events; track item) {
+      <button class="event-link" (click)="openEvent(item)">
+        <span>{{ getEventLabel(item) }}</span>
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </button>
+      }
+    </div>
+  </div>
+</ion-content>

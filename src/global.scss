@@ -1,0 +1,812 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import '@ionic/angular/css/display.css';
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/* Edge-to-edge display support */
+html,
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Override for components that need full screen */
+.full-screen {
+  padding: 0 !important;
+  margin-top: calc(-1 * env(safe-area-inset-top)) !important;
+}
+
+/* Ensure Ionic content respects safe areas */
+ion-content {
+  --padding-bottom: env(safe-area-inset-bottom);
+  --padding-start: env(safe-area-inset-left);
+  --padding-end: env(safe-area-inset-right);
+}
+
+ion-header {
+  box-shadow: none !important;
+  border-bottom: 1px solid #e0e0e0 !important;
+}
+
+/* Replace drop shadow with light grey border for toolbar */
+ion-toolbar {
+  --box-shadow: none !important;
+}
+
+/* Light mode default styles */
+ion-toolbar {
+  --background: #fff;
+  --color: #222428;
+  background: #fff;
+  color: #222428;
+}
+
+ion-tab-bar {
+  --background: #fff;
+  --color: #555;
+  --color-selected: #222428;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+}
+
+ion-tab-button {
+  --color: #555;
+  --color-selected: #222428;
+}
+
+// Light mode tab indicator color is set in tabslink.page.scss
+
+ion-footer {
+  --background: #fff;
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Global Dark Mode Styles */
+body.dark-theme {
+  background-color: var(--app-background) !important;
+  color: var(--app-text-primary) !important;
+}
+
+/* Apply dark mode to all Ionic components */
+body.dark-theme,
+body.dark-theme ion-app,
+body.dark-theme ion-content,
+body.dark-theme ion-page {
+  --ion-background-color: #1a1a1a !important;
+  --ion-text-color: #e0e0e0 !important;
+}
+
+body.dark-theme {
+
+  /* Core app structure */
+  ion-app {
+    background: var(--app-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  ion-content {
+    --background: var(--app-background) !important;
+    --color: var(--app-text-primary) !important;
+    background: var(--app-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  ion-page {
+    background: var(--app-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  /* Headers and toolbars */
+  ion-header {
+    background: var(--app-toolbar-background) !important;
+    border-bottom: 1px solid var(--app-border-color) !important;
+  }
+
+  ion-toolbar {
+    --background: var(--app-toolbar-background) !important;
+    --color: var(--app-toolbar-text) !important;
+    background: var(--app-toolbar-background) !important;
+    color: var(--app-toolbar-text) !important;
+    border-color: var(--app-border-color) !important;
+  }
+
+  /* Tab bar - bottom navigation */
+  ion-tab-bar {
+    --background: var(--app-toolbar-background) !important;
+    --color: var(--app-text-secondary) !important;
+    --color-selected: var(--app-text-primary) !important;
+    --border: 1px solid var(--app-border-color);
+    background: var(--app-toolbar-background) !important;
+    border-top: 1px solid var(--app-border-color) !important;
+  }
+
+  ion-tab-button {
+    --color: var(--app-text-secondary) !important;
+    --color-selected: var(--app-text-primary) !important;
+    color: var(--app-text-secondary) !important;
+
+    &.tab-selected {
+      color: var(--app-text-primary) !important;
+    }
+  }
+
+  /* Footer - mobile navigation */
+  ion-footer {
+    --background: var(--app-toolbar-background) !important;
+    background: var(--app-toolbar-background) !important;
+    border-top: 1px solid var(--app-border-color) !important;
+  }
+
+  /* Cards and items */
+  ion-card {
+    --background: var(--app-card-background) !important;
+    --color: var(--app-text-primary) !important;
+    background: var(--app-card-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  ion-item {
+    --background: var(--app-card-background) !important;
+    --color: var(--app-text-primary) !important;
+    --border-color: var(--app-border-color) !important;
+    background: var(--app-card-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  /* Lists */
+  ion-list {
+    background: var(--app-background) !important;
+  }
+
+  ion-list-header {
+    background: var(--app-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  /* Inputs and searchbar */
+  ion-input,
+  ion-textarea {
+    --background: var(--app-input-background);
+    --color: var(--app-input-text);
+  }
+
+  .searchbar-input {
+    background: var(--app-input-background) !important;
+    color: var(--app-input-text) !important;
+    border: 1px solid var(--app-border-color) !important;
+  }
+
+  /* Modals and popovers */
+  ion-modal {
+    --background: var(--app-background);
+  }
+
+  ion-popover {
+    --background: var(--app-popover-background);
+    --color: var(--app-popover-text);
+  }
+
+  /* Alerts */
+  .custom-alert .alert-message,
+  .custom-confirm .alert-message,
+  .custom-alert-with-header .alert-message {
+    color: var(--app-text-primary);
+  }
+
+  .custom-alert .alert-wrapper,
+  .custom-confirm .alert-wrapper,
+  .custom-alert-with-header .alert-wrapper {
+    background: var(--app-card-background);
+  }
+
+  /* Buttons */
+  ion-button {
+    --color: var(--app-text-primary);
+  }
+
+  /* Override inline styles for selects and inputs */
+  ion-select[style*="background-color: #fff"],
+  ion-select[style*="background-color:#fff"] {
+    --background: var(--app-input-background) !important;
+    background: var(--app-input-background) !important;
+  }
+
+  /* Popovers - override index.html styles */
+  .read-popovermenu-show,
+  .read-popovermenu-hide,
+  .compare-popovermenu-show,
+  .compare-popovermenu-hide {
+    background-color: var(--app-popover-background) !important;
+  }
+
+  .popovermenu-item {
+    color: var(--app-popover-text) !important;
+  }
+
+  .popovermenu-caption-text {
+    color: var(--app-popover-text) !important;
+  }
+
+  .pop-over-shadow {
+    box-shadow: -1px 2px 10px 3px rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Drawer menus */
+  .drawer-font-show,
+  .drawer-read-show,
+  .drawer-colors-show {
+    background-color: var(--app-card-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  /* Read page menus: Reading + Font drawers and popover */
+  .drawer-read-show,
+  .drawer-font-show,
+  .read-popovermenu-show,
+  .compare-popovermenu-show {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #444 !important;
+  }
+
+  .drawer-read-show .drawermenu,
+  .drawer-read-show .drawermenu-icon,
+  .drawer-read-show .drawermenu-close,
+  .drawer-font-show .drawermenu-close,
+  .drawer-font-show .tab-content,
+  .drawer-font-show .tab-content div,
+  .read-popovermenu-show .popovermenu-caption,
+  .read-popovermenu-show .popovermenu-caption-text,
+  .read-popovermenu-show .popovermenu-icon,
+  .compare-popovermenu-show .popovermenu-caption,
+  .compare-popovermenu-show .popovermenu-caption-text,
+  .compare-popovermenu-show .popovermenu-icon,
+  .popovermenu-item {
+    color: #e0e0e0 !important;
+  }
+
+  .drawer-read-show ion-item,
+  .drawer-font-show ion-item,
+  .drawer-read-show ion-select,
+  .drawer-font-show ion-select,
+  .drawer-font-show .select-fonts-ddl {
+    --background: #3a3a3a !important;
+    --color: #e0e0e0 !important;
+    --placeholder-color: #cfcfcf !important;
+    background: #3a3a3a !important;
+    color: #e0e0e0 !important;
+    border-color: #666 !important;
+  }
+
+  .drawer-read-show ion-select::part(text),
+  .drawer-read-show ion-select::part(placeholder),
+  .drawer-read-show ion-select::part(label),
+  .drawer-read-show ion-select::part(icon),
+  .drawer-font-show ion-select::part(text),
+  .drawer-font-show ion-select::part(placeholder),
+  .drawer-font-show ion-select::part(label),
+  .drawer-font-show ion-select::part(icon) {
+    color: #e0e0e0 !important;
+  }
+
+  /* Tab bar icons and text */
+  ion-tab-button ion-icon,
+  ion-tab-button ion-label {
+    color: var(--app-text-secondary) !important;
+  }
+
+  ion-tab-button.tab-selected ion-icon,
+  ion-tab-button.tab-selected ion-label {
+    color: var(--app-text-primary) !important;
+  }
+
+  /* Override any white backgrounds from inline styles or other sources */
+  div[style*="background-color: #fff"],
+  div[style*="background-color:#fff"],
+  div[style*="background-color: white"],
+  div[style*="background: #fff"],
+  div[style*="background:#fff"] {
+    background-color: var(--app-card-background) !important;
+    background: var(--app-card-background) !important;
+  }
+
+  /* Override white text colors */
+  span[style*="color: #000"],
+  div[style*="color: #000"],
+  p[style*="color: #000"] {
+    color: var(--app-text-primary) !important;
+  }
+
+  /* General text elements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  span,
+  div,
+  label {
+    color: var(--app-text-primary);
+  }
+
+  /* Buttons with white backgrounds */
+  button[style*="background-color: #fff"],
+  button[style*="background-color:#fff"] {
+    background-color: var(--app-card-background) !important;
+    color: var(--app-text-primary) !important;
+  }
+
+  /* Action-sheet dropdown readability in dark mode */
+  .action-sheet-group {
+    background: #2d2d2d !important;
+  }
+
+  .action-sheet-title,
+  .action-sheet-button,
+  .action-sheet-button.ion-activated,
+  .action-sheet-selected {
+    color: #e0e0e0 !important;
+  }
+
+  .action-sheet-cancel {
+    background: #3a3a3a !important;
+  }
+
+  /* Override inline button styles in headers */
+  ion-toolbar button[style*="background-color"],
+  ion-header button[style*="background-color"] {
+    background-color: var(--app-toolbar-background) !important;
+  }
+
+  /* Smooth transitions for dark mode toggle */
+  ion-content,
+  ion-header,
+  ion-toolbar,
+  ion-tab-bar,
+  ion-card,
+  ion-item,
+  ion-list {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+}
+
+// ...existing font faces...
+@font-face {
+  font-family: 'Besley'; //This is what we are going to call
+  src: url('../src/assets/fonts/Besley-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'BesleyItalic'; //This is what we are going to call
+  src: url('../src/assets/fonts/Besley-Italic.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'Saira'; //This is what we are going to call
+  src: url('../src/assets/fonts/Saira-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'SairaItalic'; //This is what we are going to call
+  src: url('../src/assets/fonts/Saira-Italic.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'Montserrat'; //This is what we are going to call
+  src: url('../src/assets/fonts/Montserrat-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'MontserratItalic'; //This is what we are going to call
+  src: url('../src/assets/fonts/Montserrat-Italic.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'Poppins'; //This is what we are going to call
+  src: url('../src/assets/fonts/Poppins-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'PoppinsItalic'; //This is what we are going to call
+  src: url('../src/assets/fonts/Poppins-Italic.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'Roboto'; //This is what we are going to call
+  src: url('../src/assets/fonts/Roboto-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'RobotoItalic'; //This is what we are going to call
+  src: url('../src/assets/fonts/Roboto-Italic.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'RobotoMono'; //This is what we are going to call
+  src: url('../src/assets/fonts/RobotoMono-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'RobotoMonoItalic'; //This is what we are going to call
+  src: url('../src/assets/fonts/RobotoMono-Italic.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'EBGaramond'; //This is what we are going to call
+  src: url('../src/assets/fonts/EBGaramond-Italic.ttf');
+}
+
+@font-face {
+  font-family: 'EBGaramond'; //This is what we are going to call
+  src: url('../src/assets/fonts/EBGaramond-Regular.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'PTSerif'; //This is what we are going to call
+  src: url('../src/assets/fonts/PTSerif-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'PTSerifItalic'; //This is what we are going to call
+  src: url('../src/assets/fonts/PTSerif-Italic.ttf');
+  font-style: italic, oblique;
+}
+
+@font-face {
+  font-family: 'NotoSans'; //This is what we are going to call
+  src: url('../src/assets/fonts/NotoSansTamil-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'Jana'; //This is what we are going to call
+  src: url('../src/assets/fonts/Jana.ttf');
+}
+
+@font-face {
+  font-family: 'Madhavi'; //This is what we are going to call
+  src: url('../src/assets/fonts/Madhavi.ttf');
+}
+
+@font-face {
+  font-family: 'Julie'; //This is what we are going to call
+  src: url('../src/assets/fonts/Juliee.ttf');
+}
+
+@font-face {
+  font-family: 'Thambi'; //This is what we are going to call
+  src: url('../src/assets/fonts/BalooThambi2-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'Meeral'; //This is what we are going to call
+  src: url('../src/assets/fonts/MeeraInimai-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'Pavanam'; //This is what we are going to call
+  src: url('../src/assets/fonts/Pavanam-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'Malar'; //This is what we are going to call
+  src: url('../src/assets/fonts/MuktaMalar-Regular.ttf');
+}
+
+// ...existing styles continue unchanged...
+ion-item {
+  --border-width: 0;
+  --inner-border-width: 0;
+}
+
+.searchbar-input {
+  background: #FFF !important;
+  border-radius: 30px !important;
+  height: 40px !important;
+  max-width: calc(100%);
+  font-size: 1.15em !important;
+  border: 1px solid #2e353d !important;
+  box-shadow: none !important;
+}
+
+.custom-alert .alert-message {
+  color: #111111;
+  line-height: 1.3em;
+}
+
+.custom-alert .alert-wrapper {
+  min-width: 90% !important;
+  padding-top: 25px;
+
+  button.alert-button:nth-child(1) {
+    color: #006633;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  button.alert-button:nth-child(2) {
+    color: #006633;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+.custom-confirm .alert-message {
+  color: #333333;
+  line-height: 1.3em;
+}
+
+.custom-alert {
+  .alert-wrapper {
+    .alert-head {
+      display: none;
+    }
+  }
+}
+
+.custom-confirm .alert-wrapper {
+  min-width: 90% !important;
+
+  button.alert-button:nth-child(1) {
+    color: #006666;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+  }
+
+  button.alert-button:nth-child(2) {
+    color: #006666;
+    font-size: 14px;
+    font-weight: 600;
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.custom-alert-with-header .alert-wrapper {
+  min-width: 90% !important;
+
+  button.alert-button:nth-child(1) {
+    color: #006666;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+    width: 100px;
+    height: 48px;
+  }
+
+  .custom-alert-with-header {
+    .alert-message {
+      color: #222222;
+    }
+  }
+
+  button.alert-button:nth-child(2) {
+    color: #006666;
+    font-size: 14px;
+    font-weight: 600;
+    width: 100px;
+    height: 48px;
+  }
+}
+
+ion-range::part(tick-active) {
+  height: 10px;
+  width: 2px;
+  top: 16px;
+  border-radius: 50%;
+}
+
+ion-range::part(tick) {
+  height: 10px;
+  width: 2px;
+  top: 16px;
+  border-radius: 50%;
+}
+
+/* Keep the Read page font slider knob/ticks centered in its track */
+.font-size-slider {
+  --bar-height: 4px;
+  --knob-size: 18px;
+  --knob-top: 0px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.font-size-slider::part(knob) {
+  top: 0 !important;
+}
+
+ion-segment-button {
+  min-width: auto !important;
+}
+
+ion-select::part(icon) {
+  float: right;
+}
+
+ion-select {
+  min-width: 100%;
+}
+
+input {
+  caret-color: var(--ion-color-primary) !important;
+}
+
+.has-focus.sc-ion-input-md-h input.sc-ion-input-md {
+  caret-color: var(--ion-color-primary) !important;
+}
+
+textarea {
+  caret-color: #000 !important;
+  padding-top: 0px !important;
+}
+
+ion-modal {
+  &.bottom-end {
+    align-items: flex-end;
+    --height: auto;
+
+    .ion-page {
+      position: relative;
+      display: block;
+      contain: content;
+    }
+  }
+}
+
+/* Audio slider styles - Global to prevent color change on navigation */
+.home-audio-slider {
+  padding: 0 !important;
+  width: 100%;
+  margin: 0;
+  --bar-height: 4px;
+  --bar-background: #8a8a8a;
+  --bar-background-active: #d03f0a;
+  --knob-size: 11px;
+  --knob-background: #d03f0a;
+  --knob-top: calc((var(--bar-height) - var(--knob-size)) / 2);
+  --knob-border: 8px solid #fff;
+  --knob-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+/* Ionic-specific styling for the slider knob */
+.home-audio-slider::part(knob) {
+  width: var(--knob-size);
+  height: var(--knob-size);
+  background: var(--knob-background);
+  border: var(--knob-border);
+  border-radius: 50%;
+  box-shadow: var(--knob-box-shadow);
+  top: var(--knob-top);
+}
+
+/* Light mode overrides for Search settings side panel */
+body:not(.dark-theme) ion-menu.search-settings-menu {
+  --background: #ffffff !important;
+  background-color: #ffffff !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu ion-content {
+  --background: #ffffff !important;
+  background: #ffffff !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu .search-settings-shell {
+  background-color: #ffffff !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu .search-settings-logo {
+  background-color: #f9f5ee !important;
+  border-bottom: 1px solid #e7e7e7 !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu .search-settings-title {
+  background-color: #e8f3ed !important;
+  color: #1f5a3f !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu .search-settings-content {
+  background-color: #ffffff !important;
+  color: #1f1f1f !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu ion-select.search-settings-select {
+  background-color: #ffffff !important;
+  border: 1px solid #cfd6d1 !important;
+  border-radius: 8px !important;
+  --background: #ffffff !important;
+  --color: #1f1f1f !important;
+  --placeholder-color: #5d5d5d !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu .search-settings-radio-group ion-item {
+  --background: transparent !important;
+  --color: #1f1f1f !important;
+  color: #1f1f1f !important;
+}
+
+body:not(.dark-theme) ion-menu.search-settings-menu .search-settings-radio-group ion-label,
+body:not(.dark-theme) ion-menu.search-settings-menu .search-settings-radio-group ion-radio {
+  color: #1f1f1f !important;
+  --color: #7a7a7a !important;
+  --color-checked: #2fbf71 !important;
+}
+
+/* Dark mode overrides for Search settings side panel */
+body.dark-theme ion-menu.search-settings-menu {
+  --background: #111111 !important;
+  background-color: #111111 !important;
+}
+
+body.dark-theme ion-menu.search-settings-menu ion-content {
+  --background: #111111 !important;
+  background: #111111 !important;
+}
+
+body.dark-theme ion-menu.search-settings-menu .search-settings-shell {
+  background-color: #171717 !important;
+}
+
+/* Keep the logo panel lighter in dark mode so the logo image remains visible */
+body.dark-theme ion-menu.search-settings-menu .search-settings-logo {
+  background-color: #f3efe5 !important;
+  border-bottom: 1px solid #2b2b2b !important;
+}
+
+body.dark-theme ion-menu.search-settings-menu .search-settings-title {
+  background-color: #184b34 !important;
+  color: #e8f7ef !important;
+}
+
+body.dark-theme ion-menu.search-settings-menu .search-settings-content {
+  background-color: #171717 !important;
+  color: #e6e6e6 !important;
+}
+
+body.dark-theme ion-menu.search-settings-menu .search-settings-radio-group ion-item {
+  --background: #171717 !important;
+  --color: #e6e6e6 !important;
+  color: #e6e6e6 !important;
+}
+
+body.dark-theme ion-menu.search-settings-menu .search-settings-radio-group ion-label,
+body.dark-theme ion-menu.search-settings-menu .search-settings-radio-group ion-radio {
+  color: #e6e6e6 !important;
+  --color: #8b8b8b !important;
+  --color-checked: #2fbf71 !important;
+}

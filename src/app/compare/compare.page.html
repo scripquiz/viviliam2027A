@@ -1,0 +1,121 @@
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+/>
+
+<ion-header #header id="header">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <button class="menu-button menu-button-compare">
+        <ion-icon
+          name="ellipsis-vertical"
+          class="menu-icon"
+          (click)="showhidePopoverMenu()"
+        ></ion-icon>
+      </button>
+    </ion-buttons>
+    <div [class]="'landscape' + '-header'">
+      <span class="bookTitle" (click)="openBookSelector()"
+        >{{selectedBook}}</span
+      >
+
+      <span class="versionSelector" (click)="openSetBible()"
+        >{{selectedVersion}}</span
+      >
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content
+  [class]="'theme' + selectedTheme"
+  [scrollEvents]="true"
+  (ionScroll)="handleScroll($event)"
+>
+  <!-- <div class="{{'elastic-gradiant ' + showBottomNavCompare}}"></div> -->
+  <div
+    class="{{'page_nav_arrow-left_ ' + ' ' + showBottomNavCompare + ' ' +  showPrevNav}}"
+    (click)="gotoPrevVers()"
+  >
+    <img
+      src="../../assets/images/nav-left-dotted.png"
+      class="nav-icons setleft"
+      style="left: -7px"
+    />
+  </div>
+
+  <div
+    class="{{'page_nav_arrow-right_ ' + ' ' + showBottomNavCompare + ' ' +  showNextNav}}"
+    (click)="gotoNextVers()"
+  >
+    <img
+      src="../../assets/images/nav-right-dotted.png"
+      class="nav-icons setright"
+    />
+  </div>
+
+  <!-- <div class="{{'nav_bottom_' + orientation + ' ' + showBottomNavCompare}}">
+  <div class= "{{'page_nav_arrow-left-compare_' + orientation + ' ' + showPrevNav}}" (click)="gotoPrevVers()">
+    <img src="../../assets/images/nav-left-green.png" class="nav-icons">
+  </div>
+  <div class= "{{'page_nav_arrow-right-compare_' + orientation + ' ' + showNextNav}}" (click)="gotoNextVers()">
+    <img src="../../assets/images/nav-right-green.png" class="nav-icons">
+  </div>
+</div> -->
+
+  <div style="width: 100%; height: 10px">&nbsp;</div>
+  <div
+    [class]="'container-Read ' + orientation + ' ' + paragraphModeClass + ' ' +   + ' theme' + selectedTheme"
+    style="padding-bottom: 150px; position: relative; top: 0"
+  >
+    <!-- <div id="item{{ verseItem.vnumber }}" [class]="textSizeCSS" *ngFor="let verseItem of verseList; let i=index" tappable text-wrap (click)=selectItem(i,verseItem.isSelected) -->
+
+    @for (verseItem of authservice.verseListCompare; track verseItem; let i =
+    $index) {
+    <div
+      id="item{{verseItem.vnumber + '_' + defaultBibleId}}"
+      [class]="'zoom'+authservice.textSize + ' ' + authservice.globalfont"
+    >
+      <span [innerHTML]="verseItem.seperator"></span>
+      <div
+        [ngStyle]="{'background-color': verseItem.isSelected ? '#eee' : 'inherit', 'color' : verseItem.isSelected ? '#000' : 'inherit'}"
+      >
+        <p [class]="'vers ' +  authservice.verseSpacing">
+          <img
+            [class]="'versionimg'"
+            [src]="'../../assets/images/' + verseItem.title + '.png'"
+            [ngStyle]="{'display': authservice.CompareShowLabel=='1' ? 'inline-block' : 'none'}"
+          />
+          <span
+            [class]="'versnocompare '+ authservice.verseNumberSize"
+            [ngStyle]="{'display':(authservice.versenumberShow=='1' && verseItem.vnumber!='0') ?'inline-block':'none'}"
+            >{{verseItem.vnumber}}</span
+          >
+          <span
+            tappable
+            text-wrap
+            (click)="selectItem(i,verseItem.isSelected,verseItem.vnumber)"
+            [innerHTML]="verseItem.verseData"
+          ></span>
+        </p>
+      </div>
+    </div>
+    }
+    <div class="chapterMode {{hideIfVerseMode}}">
+      <table style="margin-left: auto; margin-right: auto">
+        <tr>
+          <td>
+            <div class="enabled" (click)="loadPrevVerse()">Prev</div>
+          </td>
+          <td>
+            <div class="enabled loadfullchapter" (click)="loadChapter()">
+              Full Chapter
+            </div>
+          </td>
+          <td>
+            <div class="enabled" (click)="loadNextVerse()">Next</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</ion-content>

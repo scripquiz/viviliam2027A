@@ -1,0 +1,25 @@
+// Tab colors handled by custom Ionic color "tab-indicator" in variables.scss
+// No additional styling needed here
+
+ion-tab-bar {
+    --background: var(--app-background-secondary, #ffffff);
+    --border: 1px solid var(--app-border-color, #e0e0e0);
+}
+
+ion-tab-button {
+    --background: transparent;
+    --color: var(--app-text-secondary, #666666);
+    --color-selected: var(--ion-color-tab-indicator, #0066cc);
+}
+
+body.dark-theme ion-tab-bar {
+    --background: #1a1a1a;
+    --border: 1px solid #2f2f2f;
+    background: #1a1a1a;
+}
+
+body.dark-theme ion-tab-button {
+    --background: transparent;
+    --color: #9a9a9a;
+    --color-selected: #bb86fc;
+}
