@@ -269,6 +269,18 @@ export class HomePage {
     this.playAllText = 'Play All';
   }
 
+  playAudioDirect(idx: number, type: string, force: any) {
+    // Ensure audio is paused before starting new track
+    this.stopHomeAudioPlayback();
+
+    // Start playing the specific track
+    this.audioPlaybackService.startAudioDirect(
+      idx,
+      this.audio?.nativeElement,
+      this.todayAudioFiles
+    );
+  }
+
   private clearPerItemRepeatStates(exceptIndex: number = -1) {
     if (!Array.isArray(this.todayAudioFiles)) {
       return;
@@ -639,12 +651,12 @@ export class HomePage {
         if (rawAudioData[i]) {
           const item = rawAudioData[i];
           title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
-          type = ['bible', 'prayer', 'quote'][i] as string;
+          type = ['Psalms', 'Proverbs', 'Song'][i] as string;
           url = item.url || cachedAudio.url;
         } else {
           // Fall back to single cached URL for all items (older cache format)
           title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
-          type = ['bible', 'prayer', 'quote'][i] as string;
+          type = ['Psalms', 'Proverbs', 'Song'][i] as string;
           url = cachedAudio.url;
         }
 
@@ -835,11 +847,11 @@ export class HomePage {
               let type = 'bible';
               let title = 'Psalms';
 
-              // Map type to display title
+              // Map type to display title - USE API'S type field instead of position
               const item = data.audio[i];
               if (item) {
-                type = ['bible', 'prayer', 'quote'][i] as string;
-                title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+                type = item.type || ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+                title = type;  // Use same value for display
               }
 
               todayAudioFiles.push({
@@ -900,11 +912,11 @@ export class HomePage {
                     let type = 'bible';
                     let title = 'Psalms';
 
-                    // Map type to display title
+                    // Map type to display title - USE API'S type field instead of position
                     const item = retryData.audio[i];
                     if (item) {
-                      type = ['bible', 'prayer', 'quote'][i] as string;
-                      title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+                      type = item.type || ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
+                      title = type;  // Use same value for display
                     }
 
                     todayAudioFiles.push({

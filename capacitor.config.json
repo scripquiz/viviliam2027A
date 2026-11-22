@@ -1,0 +1,54 @@
+{
+  "appId": "com.fredfrank.viviliam",
+  "appName": "Viviliam",
+  "webDir": "www",
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "disable"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#ffffff",
+      "androidSplashResourceName": "splash_icon",
+      "androidScaleType": "FIT_CENTER",
+      "showSpinner": true,
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "spinnerColor": "#cc0000",
+      "splashFullScreen": true,
+      "splashImmersive": true,
+      "useDialog": true
+    },
+    "EdgeToEdgeSupport": {
+      "enabled": true,
+      "navigationBarMode": "default",
+      "statusBarMode": "insetsByTopMargin",
+      "statusBarOverlay": false
+    },
+    "Network": {
+      "enableNetworkEvent": true,
+      "monitorConnectionType": true
+    },
+    "Keyboard": {}
+  },
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": true,
+    "buildOptions": {
+      "keystorePath": "../viviliam-key.keystore",
+      "keystoreAlias": "key0"
+    }
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#ffffff",
+    "allowsLinkPreview": false,
+    "preferredContentMode": "mobile"
+  }
+}
