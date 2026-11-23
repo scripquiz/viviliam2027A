@@ -77,16 +77,16 @@
             <div class="card-item-header audio-header">
               <div class="audio-left-control">
                 <ion-icon name="play-circle" (click)="playAllAudiosDirect()" class="audio-control-button1"
-                  [ngStyle]="{'display': playAllText=='Play All' ? 'block' : 'none'}"
+                  [ngStyle]="{'display': !(audioPlaybackService.playAll && audioPlaybackService.audioPlaying) ? 'block' : 'none'}"
                   aria-label="Play all audio"></ion-icon>
                 <ion-icon name="pause-circle" (click)="playAllAudiosDirect()" class="audio-control-button1"
-                  [ngStyle]="{'display': playAllText=='Stop Playing' ? 'block' : 'none'}"
+                  [ngStyle]="{'display': audioPlaybackService.playAll && audioPlaybackService.audioPlaying ? 'block' : 'none'}"
                   aria-label="Stop playing audio"></ion-icon>
               </div>
 
               <div class="audio-heading">
                 <span class="audio-title-center">Daily Audio</span>
-                <span class="audio-subtitle">Hear God Every Day2</span>
+                <span class="audio-subtitle">Hear God Every Day3</span>
               </div>
 
               <div class="audio-right-control">

@@ -46,11 +46,9 @@ export class AudioPlaybackService {
     // Log URL for debugging - should contain full API path like: /assets/audio/files/2025-11/...
     this.logger.log(`Setting audio source: ${currentAudioUrl}`);
 
-    // Reset all items to pause state first
+    // Reset all items to pause state first (preserve per-item repeat for individual playback)
     for (let i = 0; i < todayAudioFiles.length; i++) {
       todayAudioFiles[i].state = 'pause';
-      todayAudioFiles[i].repeat_state = 0;
-      todayAudioFiles[i].repeat_played_count = 0;
     }
 
     // Enable repeat state if this track is in repeat mode
@@ -95,10 +93,13 @@ export class AudioPlaybackService {
 
     audioElement.onloadedmetadata = () => {
       const actualDuration = audioElement.duration;
-      todayAudioFiles[idx].duration = actualDuration;
-      todayAudioFiles[idx].durationintime = this.convertHMS(
-        Math.floor(actualDuration)
-      );
+      // Only update duration if not already set (preserve API-sourced values)
+      if (!todayAudioFiles[idx].duration || isNaN(todayAudioFiles[idx].duration)) {
+        todayAudioFiles[idx].duration = actualDuration;
+        todayAudioFiles[idx].durationintime = this.convertHMS(
+          Math.floor(actualDuration)
+        );
+      }
     };
 
     audioElement.currentTime = todayAudioFiles[idx].ctime;
@@ -232,7 +233,8 @@ export class AudioPlaybackService {
   async stopAudioDirect(
     idx: number,
     audioElement: HTMLAudioElement | null,
-    todayAudioFiles: any[]
+    todayAudioFiles: any[],
+    resetPlayAll: boolean = true
   ): Promise<void> {
     // Pause the specific track
     todayAudioFiles[idx].state = 'pause';
@@ -247,7 +249,9 @@ export class AudioPlaybackService {
     }
 
     this.audioPlaying = false;
-    this.playAll = false;
+    if (resetPlayAll) {
+      this.playAll = false;
+    }
     this.audioFocusService.releaseFocus('home');
 
     // Handle wake lock properly - await and log result without suppressing errors
@@ -260,15 +264,6 @@ export class AudioPlaybackService {
   }
 
   async playAllAudiosDirect(audioElement: HTMLAudioElement, todayAudioFiles: any[]): Promise<void> {
-    // Handle toggle - if already in Play All mode, stop everything first
-    if (this.playAll && todayAudioFiles.length > 0) {
-      this.playAll = false;
-      audioElement.pause();
-      this.audioPlaying = false;
-      await this.stopAllAudioDirect(audioElement, todayAudioFiles); // Await the stop operation
-      return;
-    }
-
     // Reset all tracks to pause state and clear repeat counters before starting Play All
     for (let i = 0; i < todayAudioFiles.length; i++) {
       todayAudioFiles[i].repeat_state = 0;
@@ -335,16 +330,14 @@ export class AudioPlaybackService {
     audioElement: any,
     todayAudioFiles: any[]
   ): Promise<void> {
-    // Stop current playback before updating repeat state
-    await this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
+    // Stop current playback before updating repeat state (preserve playAll for Play All mode)
+    await this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles, false);
 
     const currentRepeatState = Number(todayAudioFiles[i]?.repeat_state) || 0;
     const nextRepeatState = currentRepeatState >= 3 ? 0 : currentRepeatState + 1;
 
-    // Reset repeat counters for Play All mode
-    this.repeatStateAll = 0;
+    // Only reset per-item repeat counters (preserve repeatStateAll for Play All mode)
     this.repeatPlayedCountAll = 0;
-    this.clearPerItemRepeatStates(i);
 
     // Update the repeat state for this track
     todayAudioFiles[i].repeat_state = nextRepeatState;

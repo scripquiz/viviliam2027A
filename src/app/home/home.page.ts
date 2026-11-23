@@ -367,10 +367,24 @@ export class HomePage {
     // Ensure audio is paused before updating track state
     this.stopHomeAudioPlayback();
 
-    // Update individual track state
+    // CRITICAL: Actually stop the audio element and update track state via service
+    const audioElement = this.getRawAudioElement();
+    if (audioElement && typeof audioElement.pause === 'function') {
+      audioElement.pause();
+    } else {
+      this.logger.warn('stopAudioDirect: audio element not available for pausing');
+    }
+
+    // Update individual track state to reflect UI
     this.todayAudioFiles[idx].state = 'pause';
     this.todayAudioFiles[idx].repeat_state = 0;
     this.todayAudioFiles[idx].repeat_played_count = 0;
+    this.audioPlaybackService.audioPlaying = false;
+    this.audioPlaybackService.playAll = false;
+
+    if (idx === this.audioPlaybackService.currentAudioIndex) {
+      this.audioPlaybackService.currentAudioIndex = -1;
+    }
   }
 
   private clearPerItemRepeatStates(exceptIndex: number = -1) {
@@ -462,13 +476,15 @@ export class HomePage {
         this.logger.network(
           'Active internet connection confirmed - initializing page'
         );
-        // Clear stale localStorage cache when network is available to force fresh API fetch
-        localStorage.removeItem('todayAudioCache');
-        localStorage.removeItem('todayAudioCacheDate');
-        this.logger.log('Cleared audio cache - will fetch fresh data from API');
+        // Only clear stale cache when network is available — don't delete it before the load so tryLoadFromCache() can still find it on failure
+        if (this.todayAudioFiles && this.todayAudioFiles.length === 0) {
+          localStorage.removeItem('todayAudioCache');
+          localStorage.removeItem('todayAudioCacheDate');
+          this.logger.log('Cleared audio cache - will fetch fresh data from API');
 
-        if (this.isTodayTabActive()) {
-          this.loadAudioDirectly();
+          if (this.isTodayTabActive()) {
+            this.loadAudioDirectly();
+          }
         }
       }
     });
@@ -486,18 +502,6 @@ export class HomePage {
     this.authservice.showsign = 1;
     this.notificationUpdateIndex = 0;
     this.authservice.currentPage = 'HOME';
-    this.platform.ready().then(() => {
-      this.orientation = this.authservice.orientation;
-      this.databaseService
-        .create({
-          name: 'viviliam.db',
-          location: 'default',
-        })
-        .then((db: DatabaseConnection) => {
-          this.logger.log('DB created');
-          this.database = db;
-        });
-    });
     this.logger.log('View did enter');
     this.segmentSelected = this.tabRowitemSelected.toString();
   }
@@ -948,8 +952,11 @@ export class HomePage {
         this.isAudioLoading = false;
         this.audioLoadError = true;
         this.audioLoadInProgress = false;
-        const serverDownMessage = this.authservice?.serverDownMessage || 'Service temporarily not available. Please try again later.';
-        this.setStableErrorState(true, serverDownMessage);
+        // Try cache before showing server error to avoid misleading "server down" on slow connections
+        if (!this.tryLoadFromCache()) {
+          const serverDownMessage = this.authservice?.serverDownMessage || 'Service temporarily not available. Please try again later.';
+          this.setStableErrorState(true, serverDownMessage);
+        }
       }
     }, 15000);
 
@@ -1022,8 +1029,15 @@ export class HomePage {
         this.logger.error('HTTP error:', error);
         this.logger.error('Failed to load audio from API');
 
-        // Try loading from cache if available
-        this.tryLoadFromCache();
+        // Try loading from cache if available; fall back to error if cache also fails
+        if (!this.tryLoadFromCache()) {
+          const isNoNet = this.connectivityService.connectionType === 'none' ||
+                          this.connectivityService.connectionType === 'unknown';
+          const errorMsg = isNoNet
+            ? (this.authservice?.noNetWorkMessage || 'No internet connection. Please connect your device to the internet and try again.')
+            : (this.authservice?.serverDownMessage || 'Service temporarily not available. Please try again later.');
+          this.handleLoadingError(errorMsg);
+        }
       });
   }
 
