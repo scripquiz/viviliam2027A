@@ -8,7 +8,7 @@ import { LoggerService } from '../../services/logger.service';
 })
 export class AudioPlaybackService {
   // Expose as public observable properties for direct mutation
-  public currentAudioIndex: number = 0;
+  public currentAudioIndex: number = -1;
   public audioPlaying: boolean = false;
   public playAll: boolean = false;
   public repeatStateAll: number = 0;
@@ -28,20 +28,23 @@ export class AudioPlaybackService {
 
   async startAudioDirect(
     idx: number,
-    audioElement: HTMLAudioElement,
+    audioElement: any,
     todayAudioFiles: any[]
   ): Promise<void> {
     this.audioFocusService.requestFocus('home');
 
     // Reset states before starting new track
     if (this.audioPlaying) {
-      this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
+      await this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
     }
 
     this.currentAudioIndex = idx;
 
     // ✅ FIX ISSUE #4: Expose current audio URL for template binding
     const currentAudioUrl = todayAudioFiles[idx]?.url || '';
+
+    // Log URL for debugging - should contain full API path like: /assets/audio/files/2025-11/...
+    this.logger.log(`Setting audio source: ${currentAudioUrl}`);
 
     // Reset all items to pause state first
     for (let i = 0; i < todayAudioFiles.length; i++) {
@@ -61,6 +64,15 @@ export class AudioPlaybackService {
     } catch (error) {
       this.logger.error('Wake lock acquisition failed:', error);
       // Continue anyway - audio can play even without wake lock
+    }
+
+    // ✅ FIX: Check if audioElement has valid HTMLMediaElement properties first
+    if (!audioElement || typeof audioElement.pause !== 'function' || typeof audioElement.play !== 'function') {
+      this.logger.error('Invalid audio element passed to startAudioDirect');
+      console.log('audioElement:', audioElement);
+      console.log('Has pause method:', typeof audioElement.pause === 'function');
+      console.log('Has play method:', typeof audioElement.play === 'function');
+      return;
     }
 
     audioElement.preload = 'auto';
@@ -89,22 +101,19 @@ export class AudioPlaybackService {
       );
     };
 
-    // ✅ FIX ISSUE #4: Update URL for template binding after metadata loaded
-    const currentUrl = todayAudioFiles[idx]?.url || '';
-
-    audioElement.onloadedmetadata = () => {
-      const actualDuration = audioElement.duration;
-      todayAudioFiles[idx].duration = actualDuration;
-      todayAudioFiles[idx].durationintime = this.convertHMS(
-        Math.floor(actualDuration)
-      );
-    };
-
     audioElement.currentTime = todayAudioFiles[idx].ctime;
+
+    // ✅ FIX: Only set currentTime if audio element has duration (valid metadata loaded)
+    const audioHasDuration = typeof audioElement.duration === 'number' && audioElement.duration > 0;
+    if (audioHasDuration && !isNaN(todayAudioFiles[idx].ctime)) {
+      audioElement.currentTime = todayAudioFiles[idx].ctime;
+    }
+
     try {
       await audioElement.play();
     } catch (error: any) {
       this.logger.error('Error starting audio playback:', error);
+      console.log('play() error:', error.message);
     }
 
     this.audioPlaying = true;
@@ -117,7 +126,7 @@ export class AudioPlaybackService {
   }
 
   async handleAudioEnded(
-    audioElement: HTMLAudioElement,
+    audioElement: any,
     todayAudioFiles: any[]
   ): Promise<void> {
     // Reset states at the start of this handler - CRITICAL for preventing stuck loops
@@ -222,12 +231,20 @@ export class AudioPlaybackService {
 
   async stopAudioDirect(
     idx: number,
-    audioElement: HTMLAudioElement,
+    audioElement: HTMLAudioElement | null,
     todayAudioFiles: any[]
   ): Promise<void> {
     // Pause the specific track
     todayAudioFiles[idx].state = 'pause';
-    audioElement.pause();
+
+    // Check if audioElement exists before calling pause
+    if (audioElement && typeof audioElement.pause === 'function') {
+      audioElement.pause();
+    } else {
+      this.logger.warn('stopAudioDirect: audioElement is not a valid HTMLAudioElement');
+      console.log('audioElement type:', typeof audioElement);
+      console.log('audioElement:', audioElement);
+    }
 
     this.audioPlaying = false;
     this.playAll = false;
@@ -315,7 +332,7 @@ export class AudioPlaybackService {
   async setRepeatStateDirect(
     i: number,
     repeat_state: number,
-    audioElement: HTMLAudioElement,
+    audioElement: any,
     todayAudioFiles: any[]
   ): Promise<void> {
     // Stop current playback before updating repeat state

@@ -41,7 +41,32 @@ import { AuthserviceProvider } from 'src/providers/authservice/authservice';
 export class HomePage {
   public authservice: AuthserviceProvider | undefined;
 
-  @ViewChild('audio', { static: false }) audio: HTMLAudioElement;
+  // Use any type to handle Angular's template reference on native Android
+  // The element is accessed via querySelector when needed, not directly from ViewChild
+  @ViewChild('audio', { static: true }) audio: any;
+
+  // Helper to get actual HTMLMediaElement using querySelector - more reliable on native platforms
+  private getAudioElement(): HTMLMediaElement | null {
+    // Try ViewChild reference first (for web/compatibility)
+    if (this.audio && typeof this.audio.play === 'function') {
+      return this.audio as HTMLMediaElement;
+    }
+    // Fallback to DOM querySelector for native platform compatibility - always works on Capacitor WebView
+    const audioEl = document.querySelector('audio') as HTMLMediaElement;
+    if (audioEl && typeof audioEl.play === 'function') {
+      return audioEl as HTMLMediaElement;
+    }
+    return null;
+  }
+
+  // Get raw audio element from DOM for direct access - bypasses Angular's proxy issues on native Android
+  private getRawAudioElement(): HTMLMediaElement | null {
+    const el = document.querySelector('audio') as HTMLMediaElement;
+    if (el && typeof el.play === 'function' && typeof el.pause === 'function') {
+      return el;
+    }
+    return null;
+  }
   public networkSubscription: any;
 
   // Network quality states: excellent, good, fair, poor
@@ -204,22 +229,22 @@ export class HomePage {
                   // Fix #1: Removed unreliable time-based threshold check (duration - 0.5)
                   // The native 'ended' event listener is the primary signal for audio completion
                   // Polling now only handles progress tracking, not endpoint detection
-                    activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctime = parseInt(
-                      this.audio.currentTime.toString()
+                  activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctime = parseInt(
+                    this.getRawAudioElement()?.currentTime.toString()
+                  );
+                  activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctimeintime =
+                    this.audioCacheService.convertHMS(
+                      parseInt(
+                        this.getRawAudioElement()?.currentTime.toString()
+                      )
                     );
-                    activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctimeintime =
-                      this.audioCacheService.convertHMS(
-                        parseInt(
-                          this.audio.currentTime.toString()
-                        )
-                      );
                     activeAudioArray[this.audioPlaybackService.currentAudioIndex].durationintime =
                       this.audioCacheService.convertHMS(
                         parseInt(
                           activeAudioArray[this.audioPlaybackService.currentAudioIndex].duration
                         ) -
                           parseInt(
-                            this.audio.currentTime.toString()
+                          this.getRawAudioElement()?.currentTime.toString()
                           )
                       );
                 }
@@ -258,16 +283,24 @@ export class HomePage {
       return;
     }
 
+    // Get the actual audio element using querySelector - works reliably on native Android
+    const audioElement = this.getRawAudioElement();
+
+    if (!audioElement) {
+      this.logger.error('Cannot play audio: audio element not available');
+      return;
+    }
+
     if (this.audioPlaybackService.playAll) {
       this.audioPlaybackService.setPlayAll(false);
       this.audioPlaybackService.setAudioPlaying(false);
       this.playAllText = 'Play All';
-      this.audioPlaybackService.stopAllAudioDirect(this.audio, this.todayAudioFiles);
+      this.audioPlaybackService.stopAllAudioDirect(audioElement, this.todayAudioFiles);
     } else {
       this.audioPlaybackService.setPlayAll(true);
       this.audioPlaybackService.setCurrentAudioIndex(0);
       this.audioPlaybackService.setRepeatPlayedCountAll(0);
-      this.audioPlaybackService.playAllAudiosDirect(this.audio, this.todayAudioFiles);
+      this.audioPlaybackService.playAllAudiosDirect(audioElement, this.todayAudioFiles);
       this.playAllText = 'Stop Playing';
 
       // Handle wake lock properly - await and log result without suppressing errors
@@ -283,7 +316,12 @@ export class HomePage {
 
   stopAllAudioDirect() {
     // Properly await the stop operation and handle any errors
-    this.audioPlaybackService.stopAllAudioDirect(this.audio, this.todayAudioFiles)
+    const audioElement = this.getRawAudioElement();
+    if (!audioElement) {
+      this.logger.warn('stopAllAudioDirect: audio element not available');
+      return;
+    }
+    this.audioPlaybackService.stopAllAudioDirect(audioElement, this.todayAudioFiles)
       .then(() => {
         this.audioPlaybackService.setPlayAll(false);
         this.playAllText = 'Play All';
@@ -304,10 +342,18 @@ export class HomePage {
     // Start playing the specific track using position-based title mapping
     const displayName = ['Psalms', 'Proverbs', 'Song'][idx] || 'Unknown';
 
+    // Get the actual audio element using querySelector - works reliably on native Android
+    const audioElement = this.getRawAudioElement();
+
+    if (!audioElement) {
+      this.logger.error('Cannot play specific track: audio element not available');
+      return;
+    }
+
     // Start playing the specific track
     this.audioPlaybackService.startAudioDirect(
       idx,
-      this.audio,
+      audioElement,
       this.todayAudioFiles
     );
   }
@@ -510,11 +556,18 @@ export class HomePage {
       this.audioProgressIntervalId = null;
     }
 
-    // ✅ FIX ISSUE #4: Clean up audio element on destroy
+    // ✅ FIX ISSUE #4: Clean up audio element on destroy - safely handle missing methods
     if (this.audio) {
       const audioEl = this.audio as HTMLAudioElement;
-      audioEl.pause();
-      audioEl.removeEventListener('ended', () => {});
+      if (audioEl && typeof audioEl.pause === 'function') {
+        audioEl.pause();
+      }
+      // Use try-catch for event listener cleanup in case method returns undefined
+      try {
+        audioEl.removeEventListener('ended', () => {});
+      } catch (e) {
+        // Ignore errors from event listener cleanup - element may be destroyed
+      }
       this.logger.log('Audio element cleaned up in ngOnDestroy');
     }
   }
@@ -566,12 +619,23 @@ export class HomePage {
           parseInt(this.todayAudioFiles[idx].duration) -
             parseInt(obj.currentTarget.value)
         );
-        this.audioPlaybackService.startAudioDirect(idx, this.audio, this.todayAudioFiles);
+        // Use raw audio element from querySelector - works reliably on native Android
+        const audioElement = this.getRawAudioElement();
+        if (!audioElement) {
+          this.logger.warn('onChangePlayTimeDirect: cannot seek without valid audio element');
+          return;
+        }
+        this.audioPlaybackService.startAudioDirect(idx, audioElement, this.todayAudioFiles);
       } else {
-        // ✅ FIX ISSUE #7: Use direct property access (no .nativeElement wrapper)
-        this.audio.currentTime = obj.currentTarget.value;
+        // ✅ FIX ISSUE #7: Use raw audio element for direct property access
+        const audioEl = this.getRawAudioElement();
+        if (!audioEl) {
+          this.logger.warn('onChangePlayTimeDirect: cannot seek - invalid audio element');
+          return;
+        }
+        audioEl.currentTime = obj.currentTarget.value;
         try {
-          await this.audio.play();
+          await audioEl.play();
         } catch (error: any) {
           this.logger.error('Error resuming audio after seek:', error);
         }
@@ -905,7 +969,15 @@ export class HomePage {
         // ✅ CRITICAL FIX: Reset loading flags on success
         this.isAudioLoading = false;
         this.audioLoadError = false;
-        this.logger.log('Received audio data from API');
+
+        // Debug: Log raw API response structure
+        this.logger.log('Raw API Response:', data);
+        this.logger.log('API Response.audio array:', data.audio);
+
+        // Check first item URL if available
+        if (data.audio && data.audio.length > 0) {
+          this.logger.log('First audio item URL:', data.audio[0].url);
+        }
 
         const cacheEntry = { content: data, cacheDate: dateStr };
         localStorage.setItem('todayAudioCache', JSON.stringify(cacheEntry));
@@ -948,62 +1020,10 @@ export class HomePage {
       .catch((error) => {
         clearTimeout(audioLoadTimeout);
         this.logger.error('HTTP error:', error);
+        this.logger.error('Failed to load audio from API');
 
-        // Retry once for transient failures (short delay to avoid long waits)
-        const retrySchedule = setTimeout(async () => {
-          if (!this.isAudioLoading) {
-            return;
-          }
-
-          try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-
-            // Convert raw API data to the expected array format for UI with correct titles
-            const todayAudioFiles: any[] = [];
-            if (data.audio && Array.isArray(data.audio)) {
-              for (let i = 0; i < Math.min(Math.max(data.audio.length, this.authservice.audio_bibles?.length || 0), 3); i++) {
-                const item = data.audio[i];
-                const displayName = ['Psalms', 'Proverbs', 'Song'][i] || (item?.type || 'Unknown');
-
-                todayAudioFiles.push({
-                  id: `${displayName.toLowerCase()}_${dateStr}_${i}`,
-                  type: displayName,
-                  subtitle: displayName,
-                  url: item?.url || '',
-                  duration: item?.duration || 0,
-                  durationintime: item ? this.audioCacheService.convertHMS(item.duration) : '0:00',
-                  state: 'pause',
-                  ctime: 0,
-                  ctimeintime: '0:00',
-                  repeat_state: 0,
-                  repeat_played_count: 0,
-                });
-              }
-            }
-
-            this.todayAudioFiles = todayAudioFiles;
-            this.notificationsHomeCount = this.todayAudioFiles.length;
-
-            // ✅ FIX ISSUE #4: Set audio source binding for template reference (retry handler)
-            const currentAudioIndex = typeof this.audioPlaybackService.currentAudioIndex === 'number' && this.audioPlaybackService.currentAudioIndex < this.todayAudioFiles.length ? this.audioPlaybackService.currentAudioIndex : -1;
-            if (currentAudioIndex >= 0) {
-              this.selectedAudioSource = this.todayAudioFiles[currentAudioIndex].url;
-            } else {
-              this.selectedAudioSource = '';
-            }
-
-            this.setStableErrorState(false, '');
-          } catch (fetchError) {
-            this.logger.error('Fetch request failed:', fetchError);
-            this.audioLoadError = true;
-            const serverDownMessage = this.authservice?.serverDownMessage || 'Service temporarily not available. Please try again later.';
-            this.setStableErrorState(true, serverDownMessage);
-          }
-        }, 1000); // Short delay before retry
+        // Try loading from cache if available
+        this.tryLoadFromCache();
       });
   }
 
