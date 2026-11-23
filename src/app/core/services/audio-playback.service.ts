@@ -124,63 +124,67 @@ export class AudioPlaybackService {
     // Store the known duration for fallback detection
     const knownDuration = todayAudioFiles[idx]?.duration || audioElement.duration || 0;
 
-    // ✅ FIX: Duration-based timeout as fallback for Capacitor WebView where 'ended' may not fire
-    const PLAY_END_THRESHOLD_MS = 1500; // Consider ended if time is within 1.5s of end or past end
-
-    let completionChecked = false;
-
-    const durationFallback = () => {
-      if (completionChecked) return;
-
-      const currentTime = audioElement.currentTime;
-      const actualDuration = audioElement.duration || knownDuration;
-      const timeRemaining = actualDuration - currentTime;
-
-      // Fire if: past end, or within threshold of end AND playing/paused
-      const isPastEnd = timeRemaining <= 0;
-      const isNearEnd = timeRemaining > 0 && timeRemaining <= (PLAY_END_THRESHOLD_MS / 1000);
-      const isPlayingOrPaused = audioElement.readyState >= 2; // HAVE_CURRENT_DATA
-
-      if ((isPastEnd || isNearEnd) && isPlayingOrPaused) {
-        completionChecked = true;
-        this.logger.log(`Duration-based completion detected for track ${idx}: currentTime=${currentTime.toFixed(1)}, duration=${actualDuration.toFixed(1)}`);
-        this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
-      }
-    };
-
-    // Set up the 'ended' event listener (primary mechanism)
+    // Set up the 'ended' event listener (primary mechanism — always active)
     let endedFired = false;
     audioElement.addEventListener('ended', () => {
       if (endedFired) return;
       endedFired = true;
-      completionChecked = true;
       this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
     }, { once: true });
 
-    // Duration-based fallback timer — fires when playback should be complete
-    const durationCheckInterval = setInterval(() => {
-      if (completionChecked) {
-        clearInterval(durationCheckInterval);
-        return;
-      }
-      durationFallback();
-    }, 500);
+    // Duration-based completion detection — ONLY for individual track playback
+    // In Play All mode, the native 'ended' event must drive transitions (duration fallback fires prematurely with streaming)
+    let durationCheckInterval: ReturnType<typeof setInterval> | null = null;
+    let safetyTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    // Cleanup interval after a safe window past expected end
-    const safetyTimeout = setTimeout(() => {
-      if (!completionChecked) {
-        completionChecked = true;
-        clearInterval(durationCheckInterval);
-        this.logger.warn(`Safety timeout for track ${idx} — forcing ended`);
-        this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
-      }
-    }, Math.max((knownDuration * 1000) + 3000, 15000)); // duration + 3s or at least 15s
+    if (!this.playAll) {
+      const PLAY_END_THRESHOLD_MS = 1500; // Consider ended if time is within 1.5s of end or past end
+
+      let completionChecked = false;
+
+      const durationFallback = () => {
+        if (completionChecked) return;
+
+        const currentTime = audioElement.currentTime;
+        const actualDuration = audioElement.duration || knownDuration;
+        const timeRemaining = actualDuration - currentTime;
+
+        // Fire if: past end, or within threshold of end AND has data
+        const isPastEnd = timeRemaining <= 0;
+        const isNearEnd = timeRemaining > 0 && timeRemaining <= (PLAY_END_THRESHOLD_MS / 1000);
+        const isPlayingOrPaused = audioElement.readyState >= 2; // HAVE_CURRENT_DATA
+
+        if ((isPastEnd || isNearEnd) && isPlayingOrPaused) {
+          completionChecked = true;
+          this.logger.log(`Duration-based completion detected for track ${idx}: currentTime=${currentTime.toFixed(1)}, duration=${actualDuration.toFixed(1)}`);
+          this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
+        }
+      };
+
+      durationCheckInterval = setInterval(() => {
+        if (completionChecked) {
+          clearInterval(durationCheckInterval);
+          return;
+        }
+        durationFallback();
+      }, 500);
+
+      // Cleanup interval after a safe window past expected end
+      safetyTimeout = setTimeout(() => {
+        if (!completionChecked) {
+          completionChecked = true;
+          clearInterval(durationCheckInterval!);
+          this.logger.warn(`Safety timeout for track ${idx} — forcing ended`);
+          this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
+        }
+      }, Math.max((knownDuration * 1000) + 3000, 15000)); // duration + 3s or at least 15s
+    }
 
     // Store cleanup refs for potential future use
     (audioElement as any).__endedFired = () => endedFired;
     (audioElement as any).__cleanupDuration = () => {
-      clearInterval(durationCheckInterval);
-      clearTimeout(safetyTimeout);
+      if (durationCheckInterval) clearInterval(durationCheckInterval);
+      if (safetyTimeout) clearTimeout(safetyTimeout);
     };
   }
 
