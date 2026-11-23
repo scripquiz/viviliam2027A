@@ -121,11 +121,67 @@ export class AudioPlaybackService {
     this.audioPlaying = true;
     this.wakeLockService.resetActivity();
 
-    // Use off instead of onended to avoid the callback becoming stale
-    // Wrap in NgZone.run() so state changes in native 'ended' event trigger Angular change detection on Capacitor WebView
+    // Store the known duration for fallback detection
+    const knownDuration = todayAudioFiles[idx]?.duration || audioElement.duration || 0;
+
+    // ✅ FIX: Duration-based timeout as fallback for Capacitor WebView where 'ended' may not fire
+    const PLAY_END_THRESHOLD_MS = 1500; // Consider ended if time is within 1.5s of end or past end
+
+    let completionChecked = false;
+
+    const durationFallback = () => {
+      if (completionChecked) return;
+
+      const currentTime = audioElement.currentTime;
+      const actualDuration = audioElement.duration || knownDuration;
+      const timeRemaining = actualDuration - currentTime;
+
+      // Fire if: past end, or within threshold of end AND playing/paused
+      const isPastEnd = timeRemaining <= 0;
+      const isNearEnd = timeRemaining > 0 && timeRemaining <= (PLAY_END_THRESHOLD_MS / 1000);
+      const isPlayingOrPaused = audioElement.readyState >= 2; // HAVE_CURRENT_DATA
+
+      if ((isPastEnd || isNearEnd) && isPlayingOrPaused) {
+        completionChecked = true;
+        this.logger.log(`Duration-based completion detected for track ${idx}: currentTime=${currentTime.toFixed(1)}, duration=${actualDuration.toFixed(1)}`);
+        this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
+      }
+    };
+
+    // Set up the 'ended' event listener (primary mechanism)
+    let endedFired = false;
     audioElement.addEventListener('ended', () => {
+      if (endedFired) return;
+      endedFired = true;
+      completionChecked = true;
       this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
     }, { once: true });
+
+    // Duration-based fallback timer — fires when playback should be complete
+    const durationCheckInterval = setInterval(() => {
+      if (completionChecked) {
+        clearInterval(durationCheckInterval);
+        return;
+      }
+      durationFallback();
+    }, 500);
+
+    // Cleanup interval after a safe window past expected end
+    const safetyTimeout = setTimeout(() => {
+      if (!completionChecked) {
+        completionChecked = true;
+        clearInterval(durationCheckInterval);
+        this.logger.warn(`Safety timeout for track ${idx} — forcing ended`);
+        this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
+      }
+    }, Math.max((knownDuration * 1000) + 3000, 15000)); // duration + 3s or at least 15s
+
+    // Store cleanup refs for potential future use
+    (audioElement as any).__endedFired = () => endedFired;
+    (audioElement as any).__cleanupDuration = () => {
+      clearInterval(durationCheckInterval);
+      clearTimeout(safetyTimeout);
+    };
   }
 
   async handleAudioEnded(
@@ -141,23 +197,27 @@ export class AudioPlaybackService {
     const activePlayAll = this.playAll;
     this.playAll = false;
 
-    const isBufferedComplete = audioElement.buffered && audioElement.buffered.length > 0;
-    const bufferedEnd = isBufferedComplete ? audioElement.buffered.end(audioElement.buffered.length - 1) : null;
+    // In Play All mode, the 'ended' event confirms completion — don't block on buffer state
+    let shouldAdvance = activePlayAll;
     const currentPos = audioElement.currentTime;
 
-    // Fix Bug #1: Relax buffer check for Capacitor WebView where buffered data may lag behind playback position.
-    // Use 2s tolerance — if audio has played within 2s of duration, treat as complete.
-    const BUFFER_TOLERANCE = 2;
-    const nearEnd = audioElement.duration && (audioElement.duration - currentPos) <= BUFFER_TOLERANCE;
-    const shouldAdvance =
-      !isBufferedComplete || // No buffered data - likely ended normally
-      (nearEnd && (!bufferedEnd || bufferedEnd >= currentPos)); // Near end of audio, buffer caught up or unknown
-
     if (!shouldAdvance) {
-      this.logger.warn(
-        `Audio ended but may not have completed playback fully. Buffer state: currentTime=${currentPos}, bufferedEnd=${bufferedEnd}, duration=${audioElement.duration}`
-      );
-      return; // Don't replay on incomplete buffer - let user control via UI
+      const isBufferedComplete = audioElement.buffered && audioElement.buffered.length > 0;
+      const bufferedEnd = isBufferedComplete ? audioElement.buffered.end(audioElement.buffered.length - 1) : null;
+
+      // For individual playback: check buffer to avoid premature replay
+      const BUFFER_TOLERANCE = 2;
+      const nearEnd = audioElement.duration && (audioElement.duration - currentPos) <= BUFFER_TOLERANCE;
+      shouldAdvance =
+        !isBufferedComplete ||
+        (nearEnd && (!bufferedEnd || bufferedEnd >= currentPos));
+
+      if (!shouldAdvance) {
+        this.logger.warn(
+          `Audio ended but may not have completed playback fully. Buffer state: currentTime=${currentPos}, bufferedEnd=${bufferedEnd}, duration=${audioElement.duration}`
+        );
+        return; // Don't replay on incomplete buffer - let user control via UI
+      }
     }
 
     todayAudioFiles[this.currentAudioIndex].ctime = 0;
