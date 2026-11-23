@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { WakeLockService } from '../../services/wake-lock.service';
 import { AudioFocusService } from '../../services/audio-focus.service';
 import { LoggerService } from '../../services/logger.service';
@@ -17,7 +17,8 @@ export class AudioPlaybackService {
   constructor(
     private wakeLockService: WakeLockService,
     private audioFocusService: AudioFocusService,
-    private logger: LoggerService
+    private logger: LoggerService,
+    private ngZone: NgZone
   ) {}
 
   setAudioPlaying(value: boolean) { this.audioPlaying = value; }
@@ -33,8 +34,8 @@ export class AudioPlaybackService {
   ): Promise<void> {
     this.audioFocusService.requestFocus('home');
 
-    // Reset states before starting new track
-    if (this.audioPlaying) {
+    // Stop previous track only when NOT in Play All mode (Play All handles transitions via handleAudioEnded)
+    if (this.audioPlaying && !this.playAll) {
       await this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
     }
 
@@ -121,8 +122,9 @@ export class AudioPlaybackService {
     this.wakeLockService.resetActivity();
 
     // Use off instead of onended to avoid the callback becoming stale
+    // Wrap in NgZone.run() so state changes in native 'ended' event trigger Angular change detection on Capacitor WebView
     audioElement.addEventListener('ended', () => {
-      this.handleAudioEnded(audioElement, todayAudioFiles);
+      this.ngZone.run(() => this.handleAudioEnded(audioElement, todayAudioFiles));
     }, { once: true });
   }
 
@@ -136,15 +138,20 @@ export class AudioPlaybackService {
 
     // Clear playing state temporarily - will be re-established by subsequent logic
     this.audioPlaying = false;
+    const activePlayAll = this.playAll;
     this.playAll = false;
 
     const isBufferedComplete = audioElement.buffered && audioElement.buffered.length > 0;
     const bufferedEnd = isBufferedComplete ? audioElement.buffered.end(audioElement.buffered.length - 1) : null;
     const currentPos = audioElement.currentTime;
 
+    // Fix Bug #1: Relax buffer check for Capacitor WebView where buffered data may lag behind playback position.
+    // Use 2s tolerance — if audio has played within 2s of duration, treat as complete.
+    const BUFFER_TOLERANCE = 2;
+    const nearEnd = audioElement.duration && (audioElement.duration - currentPos) <= BUFFER_TOLERANCE;
     const shouldAdvance =
       !isBufferedComplete || // No buffered data - likely ended normally
-      (bufferedEnd === currentPos && bufferedEnd < audioElement.duration); // Buffered to actual end
+      (nearEnd && (!bufferedEnd || bufferedEnd >= currentPos)); // Near end of audio, buffer caught up or unknown
 
     if (!shouldAdvance) {
       this.logger.warn(
@@ -159,7 +166,7 @@ export class AudioPlaybackService {
       parseInt(todayAudioFiles[this.currentAudioIndex].duration)
     );
 
-    if (this.playAll) {
+    if (activePlayAll) {
       if (this.currentAudioIndex < todayAudioFiles.length - 1) {
         this.logger.log(`Moving to next track: ${this.currentAudioIndex + 1}`);
         this.currentAudioIndex++;
@@ -176,15 +183,11 @@ export class AudioPlaybackService {
           await this.startAudioDirect(0, audioElement, todayAudioFiles);
         } else {
           this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
-          // ✅ FIX ISSUE #3: Preserve Play All state until user toggles it off
-          if (prevPlayAll) {
-            this.playAll = prevPlayAll;  // Keep Play All mode active
-            this.logger.log('End of playlist - keeping Play All mode');
-          } else {
-            this.playAll = false;
-            this.logger.log('PlayAll: false');
-          }
         }
+        // Restore Play All state — keep it active after user-initiated playlist completes
+        this.playAll = true;
+        this.audioPlaying = false;
+        this.logger.log('End of playlist - keeping Play All mode');
       }
     } else if (todayAudioFiles[this.currentAudioIndex]?.repeat_state > 0) {
       const currentRepeatCount = todayAudioFiles[this.currentAudioIndex]?.repeat_played_count || 0;
@@ -218,15 +221,8 @@ export class AudioPlaybackService {
       }
     } else {
       this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
-
-      // ✅ FIX ISSUE #3: Handle Play All mode restoration at end of playlist
-      if (prevPlayAll) {
-        this.playAll = prevPlayAll;  // Keep Play All state until user toggles it off
-        this.logger.log('End of Play All playlist - keeping mode active');
-        this.audioPlaying = false;  // Stop audio element
-      } else if (prevAudioPlaying) {
-        this.audioPlaying = true;  // Restore normal playing state for individual tracks
-      }
+      // NOTE: stopAudioDirect already sets audioPlaying=false and track state='pause'
+      // No need to restore audioPlaying — the track finished normally without repeat
     }
   }
 
