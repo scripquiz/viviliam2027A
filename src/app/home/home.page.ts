@@ -1,6 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+import { ViewEncapsulation, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Component, ViewChild } from '@angular/core';
 import {
   FormsModule,
@@ -40,8 +39,9 @@ import { AuthserviceProvider } from 'src/providers/authservice/authservice';
   ]
 })
 export class HomePage {
-  @ViewChild(IonContent, { static: false }) content: IonContent;
-  @ViewChild('audioPlayer') audio: any;
+  public authservice: AuthserviceProvider | undefined;
+
+  @ViewChild('audio', { static: false }) audio: HTMLAudioElement;
   public networkSubscription: any;
 
   // Network quality states: excellent, good, fair, poor
@@ -80,19 +80,20 @@ export class HomePage {
   public errorStateTimer: any = null;
   public stableErrorDetected: boolean = false;
   public get isServerError(): boolean {
-    return this.APIMessage === this.authservice.serverDownMessage;
+    const authservice = inject(AuthserviceProvider);
+    return this.APIMessage === (authservice?.serverDownMessage || '');
   }
   public segmentSelected: string = '0';
   public isDarkMode: boolean = false;
   public audioProgressIntervalId: any = null;
+
+  // ✅ FIX ISSUE #4: (Using window-based event for cross-service audio URL updates)
   constructor(
-    private http: HttpClient,
     public connectivityService: ConnectivityService,
 
     private wakeLockService: WakeLockService,
     private screenorientation: ScreenOrientationService,
     private ionLoaderService: IonLoaderService,
-    private authservice: AuthserviceProvider,
     private platform: Platform,
     private databaseService: DatabaseService,
     private logger: LoggerService,
@@ -101,6 +102,8 @@ export class HomePage {
     private audioPlaybackService: AudioPlaybackService,
     private audioCacheService: AudioCacheService
   ) {
+    // Initialize authservice using inject() for proper Angular DI
+    this.authservice = inject(AuthserviceProvider);
     this.errorStateTimer = null;
     this.stableErrorDetected = false;
 
@@ -154,7 +157,8 @@ export class HomePage {
               this.logger.network(
                 'Active connectivity test failed - setting error state'
               );
-              this.setStableErrorState(true, this.authservice.noNetWorkMessage);
+              const noNetMessage = this.authservice?.noNetWorkMessage || 'No internet connection. Please connect your device to the internet and try again.';
+              this.setStableErrorState(true, noNetMessage);
             }
           });
           if (this.screenorientation.type == 'landscape-primary') {
@@ -190,7 +194,7 @@ export class HomePage {
           .then((db: DatabaseConnection) => {
             this.database = db;
             this.audioProgressIntervalId = setInterval(() => {
-              if (this.audioPlaybackService.audioPlaying) {
+              if (this.audioPlaybackService.audioPlaying && typeof this.audioPlaybackService.currentAudioIndex === 'number') {
                 const activeAudioArray = this.todayAudioFiles;
                 if (
                   activeAudioArray &&
@@ -201,12 +205,12 @@ export class HomePage {
                   // The native 'ended' event listener is the primary signal for audio completion
                   // Polling now only handles progress tracking, not endpoint detection
                     activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctime = parseInt(
-                      this.audio.nativeElement.currentTime.toString()
+                      this.audio.currentTime.toString()
                     );
                     activeAudioArray[this.audioPlaybackService.currentAudioIndex].ctimeintime =
                       this.audioCacheService.convertHMS(
                         parseInt(
-                          this.audio.nativeElement.currentTime.toString()
+                          this.audio.currentTime.toString()
                         )
                       );
                     activeAudioArray[this.audioPlaybackService.currentAudioIndex].durationintime =
@@ -215,7 +219,7 @@ export class HomePage {
                           activeAudioArray[this.audioPlaybackService.currentAudioIndex].duration
                         ) -
                           parseInt(
-                            this.audio.nativeElement.currentTime.toString()
+                            this.audio.currentTime.toString()
                           )
                       );
                 }
@@ -240,45 +244,87 @@ export class HomePage {
     const isNoNet = this.connectivityService.connectionType === 'none' ||
                      this.connectivityService.connectionType === 'unknown';
 
-    const errorMsg = isNoNet ? this.authservice.noNetWorkMessage : this.authservice.serverDownMessage;
+    const errorMsg = isNoNet
+      ? (this.authservice?.noNetWorkMessage || 'No internet connection. Please connect your device to the internet and try again.')
+      : (this.authservice?.serverDownMessage || 'Service temporarily not available. Please try again later.');
 
     this.setStableErrorState(true, errorMsg);
     this.logger.log(isNoNet ? 'Falling back to database audio loading' : 'Setting server error flag for audio loading');
   }
   playAllAudiosDirect() {
+    // Validate that we have audio files to play
+    if (!this.todayAudioFiles || this.todayAudioFiles.length === 0) {
+      this.logger.warn('No audio files available for Play All');
+      return;
+    }
+
     if (this.audioPlaybackService.playAll) {
       this.audioPlaybackService.setPlayAll(false);
       this.audioPlaybackService.setAudioPlaying(false);
       this.playAllText = 'Play All';
-      this.audioPlaybackService.stopAllAudioDirect(this.audio?.nativeElement, this.todayAudioFiles);
+      this.audioPlaybackService.stopAllAudioDirect(this.audio, this.todayAudioFiles);
     } else {
       this.audioPlaybackService.setPlayAll(true);
       this.audioPlaybackService.setCurrentAudioIndex(0);
       this.audioPlaybackService.setRepeatPlayedCountAll(0);
-      this.audioPlaybackService.playAllAudiosDirect(this.audio?.nativeElement, this.todayAudioFiles);
+      this.audioPlaybackService.playAllAudiosDirect(this.audio, this.todayAudioFiles);
       this.playAllText = 'Stop Playing';
-      this.wakeLockService.keepAwake().then(
-        () => {},
-        () => this.logger.log('error keeping device awake')
-      );
+
+      // Handle wake lock properly - await and log result without suppressing errors
+      this.wakeLockService.keepAwake()
+        .then(() => {
+          this.logger.log('Wake lock acquired for play-all mode in home.page');
+        })
+        .catch(error => {
+          this.logger.error('Error acquiring wake lock in playAllAudiosDirect:', error);
+        });
     }
   }
+
   stopAllAudioDirect() {
-    this.audioPlaybackService.stopAllAudioDirect(this.audio?.nativeElement, this.todayAudioFiles);
-    this.audioPlaybackService.setPlayAll(false);
-    this.playAllText = 'Play All';
+    // Properly await the stop operation and handle any errors
+    this.audioPlaybackService.stopAllAudioDirect(this.audio, this.todayAudioFiles)
+      .then(() => {
+        this.audioPlaybackService.setPlayAll(false);
+        this.playAllText = 'Play All';
+        this.logger.log('Stop All Audio completed');
+      })
+      .catch(error => {
+        this.logger.error('Error stopping all audio:', error);
+        // Don't block UI on error - just log it
+        this.audioPlaybackService.setPlayAll(false);
+        this.playAllText = 'Play All';
+      });
   }
 
-  playAudioDirect(idx: number, type: string, force: any) {
+  playAudioDirect(idx: number) {
     // Ensure audio is paused before starting new track
     this.stopHomeAudioPlayback();
+
+    // Start playing the specific track using position-based title mapping
+    const displayName = ['Psalms', 'Proverbs', 'Song'][idx] || 'Unknown';
 
     // Start playing the specific track
     this.audioPlaybackService.startAudioDirect(
       idx,
-      this.audio?.nativeElement,
+      this.audio,
       this.todayAudioFiles
     );
+  }
+
+  stopAudioDirect(idx: number) {
+    // Validate that we have audio files and valid index
+    if (!this.todayAudioFiles || !Array.isArray(this.todayAudioFiles) || idx >= this.todayAudioFiles.length) {
+      return;
+    }
+
+    // Ensure audio is paused before updating track state
+    this.stopHomeAudioPlayback();
+
+    // Update individual track state
+    this.todayAudioFiles[idx].state = 'pause';
+    this.todayAudioFiles[idx].repeat_state = 0;
+    this.todayAudioFiles[idx].repeat_played_count = 0;
   }
 
   private clearPerItemRepeatStates(exceptIndex: number = -1) {
@@ -295,11 +341,13 @@ export class HomePage {
   }
 
   setRepeatStateDirect(i, repeat_state) {
-    this.audioPlaybackService.setRepeatStateDirect(i, repeat_state, this.audio?.nativeElement, this.todayAudioFiles);
+    this.audioPlaybackService.setRepeatStateDirect(i, repeat_state, this.audio, this.todayAudioFiles);
   }
 
   private stopHomeAudioPlayback(): void {
-    this.audioPlaybackService.stopAudioDirect(this.audioPlaybackService.currentAudioIndex, this.audio?.nativeElement, this.todayAudioFiles);
+    if (typeof this.audioPlaybackService.currentAudioIndex === 'number') {
+      this.audioPlaybackService.stopAudioDirect(this.audioPlaybackService.currentAudioIndex, this.audio, this.todayAudioFiles);
+    }
   }
 
   async openURLWeb(url: string) {
@@ -348,12 +396,13 @@ export class HomePage {
     this.stopHomeAudioPlayback();
     this.audioFocusService.releaseFocus('home');
 
-    // Release wake lock when leaving the page
+    // Release wake lock when leaving the page - await properly
     if (this.wakeLockService.isActive()) {
-      this.wakeLockService
-        .allowSleepAgain()
+      this.wakeLockService.allowSleepAgain()
         .then(() => this.logger.log('Wake lock released on page leave'))
-        .catch(() => this.logger.log('Wake lock release failed on page leave'));
+        .catch(error => {
+          this.logger.error('Error releasing wake lock on page leave:', error);
+        });
     }
   }
 
@@ -439,6 +488,11 @@ export class HomePage {
     this.audioFocusService.releaseFocus('home');
     this.audioFocusService.unregisterOwner('home');
 
+    // ✅ FIX ISSUE #4: Clean up audio URL change listener
+    if ((window as any).__VIVILIAM_AUDIO_URL_CHANGED) {
+      delete (window as any).__VIVILIAM_AUDIO_URL_CHANGED;
+    }
+
     if (this.networkSubscription) {
       this.networkSubscription.unsubscribe();
     }
@@ -455,6 +509,14 @@ export class HomePage {
       clearInterval(this.audioProgressIntervalId);
       this.audioProgressIntervalId = null;
     }
+
+    // ✅ FIX ISSUE #4: Clean up audio element on destroy
+    if (this.audio) {
+      const audioEl = this.audio as HTMLAudioElement;
+      audioEl.pause();
+      audioEl.removeEventListener('ended', () => {});
+      this.logger.log('Audio element cleaned up in ngOnDestroy');
+    }
   }
   // Template binding for repeat state all
   get repeat_state_all(): string {
@@ -462,14 +524,22 @@ export class HomePage {
   }
 
   setRepeatStateAll() {
-    this.audioPlaybackService.repeatStateAll = (Number(this.audioPlaybackService.repeatStateAll) || 0) + 1;
-    if (this.audioPlaybackService.repeatStateAll > 3) this.audioPlaybackService.repeatStateAll = 0;
+    const currentState = Number(this.audioPlaybackService.repeatStateAll) || 0;
+
+    // Handle wrap-around: after mode 3, reset to 0 (off)
+    if (currentState >= 3) {
+      this.audioPlaybackService.repeatStateAll = 0;
+      this.logger.log('Repeat all turned off');
+    } else {
+      // Increment repeat count, cycling between 1, 2, 3
+      this.audioPlaybackService.repeatStateAll = currentState + 1;
+      this.logger.log(`Repeat all set to ${this.audioPlaybackService.repeatStateAll}`);
+    }
+
     this.audioPlaybackService.repeatPlayedCountAll = 0;
 
     // Enforce exclusive repeat selection: repeat-all clears per-item repeats.
     this.clearPerItemRepeatStates();
-
-    this.logger.log(`Repeat all set to ${this.audioPlaybackService.repeatStateAll}`);
   }
   init_loadNotifications(flag) {
     if (flag == 1) this.ionLoaderService.simpleLoader('Please wait...');
@@ -478,7 +548,7 @@ export class HomePage {
                      this.connectivityService.connectionType === 'unknown';
 
     if (isNoNet) {
-      this.APIMessage = this.authservice.noNetWorkMessage;
+      this.APIMessage = this.authservice?.noNetWorkMessage || 'No internet connection. Please connect your device to the internet and try again.';
       this.showNetworkOrAPIErrorMessage = 1;
     } else {
     }
@@ -486,7 +556,7 @@ export class HomePage {
     this.ionLoaderService.dismissLoader();
   }
       async onChangePlayTimeDirect(idx: number, obj: any) {
-    if (!this.audioPlaybackService.playAll && this.audioPlaybackService.audioPlaying) {
+    if (!this.audioPlaybackService.playAll && this.audioPlaybackService.audioPlaying && typeof this.audioPlaybackService.currentAudioIndex === 'number') {
       if (idx != this.audioPlaybackService.currentAudioIndex) {
         this.todayAudioFiles[idx].ctime = obj.currentTarget.value;
         this.todayAudioFiles[idx].ctimeintime = this.audioCacheService.convertHMS(
@@ -496,11 +566,12 @@ export class HomePage {
           parseInt(this.todayAudioFiles[idx].duration) -
             parseInt(obj.currentTarget.value)
         );
-        this.audioPlaybackService.startAudioDirect(idx, this.audio?.nativeElement, this.todayAudioFiles);
+        this.audioPlaybackService.startAudioDirect(idx, this.audio, this.todayAudioFiles);
       } else {
-        this.audio.nativeElement.currentTime = obj.currentTarget.value;
+        // ✅ FIX ISSUE #7: Use direct property access (no .nativeElement wrapper)
+        this.audio.currentTime = obj.currentTarget.value;
         try {
-          await this.audio.nativeElement.play();
+          await this.audio.play();
         } catch (error: any) {
           this.logger.error('Error resuming audio after seek:', error);
         }
@@ -510,7 +581,7 @@ export class HomePage {
   async openExternalURLDirectly(url: string, title: string, urlplace?: string) {
     if (url != '') {
       if (this.connectivityService.connectionType === 'none' || this.connectivityService.connectionType === 'unknown') {
-        this.authservice.showAlert('', '', this.authservice.noNetWorkMessage);
+        this.authservice?.showAlert('', '', this.authservice?.noNetWorkMessage || 'No internet connection. Please connect your device to the internet and try again.');
         return;
       }
       this.ionLoaderService.simpleLoader('Opening...');
@@ -526,7 +597,7 @@ export class HomePage {
       } catch (error) {
         this.ionLoaderService.dismissLoader();
         this.logger.error('Error opening URL:', error);
-        this.authservice.showAlert(
+        this.authservice?.showAlert(
           'Error',
           '',
           'Failed to open the page. Please check your connection.'
@@ -542,8 +613,8 @@ export class HomePage {
     if (isError) {
       const isServerErr =
         this.connectivityService.lastConnectivityResult &&
-        message !== this.authservice.noNetWorkMessage;
-      if (isServerErr || message === this.authservice.noNetWorkMessage) {
+        message !== this.authservice?.noNetWorkMessage;
+      if (isServerErr || message === this.authservice?.noNetWorkMessage) {
         this.APIMessage = message;
       }
       this.showNetworkOrAPIErrorMessage = 1;
@@ -601,7 +672,7 @@ export class HomePage {
           if (this.isTodayTabActive()) {
             this.setStableErrorState(
               true,
-              this.authservice.noNetWorkMessage
+              this.authservice?.noNetWorkMessage || 'No internet connection. Please connect your device to the internet and try again.'
             );
           }
 
@@ -677,6 +748,14 @@ export class HomePage {
 
       this.todayAudioFiles = todayAudioFiles;
       this.notificationsHomeCount = this.todayAudioFiles.length;
+
+      // ✅ FIX ISSUE #4: Set audio source binding for cache-loaded data
+      if (this.audioPlaybackService.audioPlaying && typeof this.audioPlaybackService.currentAudioIndex === 'number' && this.audioPlaybackService.currentAudioIndex < this.todayAudioFiles.length) {
+        this.selectedAudioSource = this.todayAudioFiles[this.audioPlaybackService.currentAudioIndex].url;
+      } else {
+        this.selectedAudioSource = '';
+      }
+
       // ✅ FIX: Use error=false since cache load was successful (offline mode)
       this.isAudioLoading = false;
       this.audioLoadError = false;
@@ -727,46 +806,34 @@ export class HomePage {
           // ✅ Convert raw cache data to the expected array format for UI with correct titles
           const todayAudioFiles: any[] = [];
           for (let i = 0; i < data.audio.length; i++) {
-            let type = 'bible';
-            let title = 'Psalms';
+            // ✅ FIX ISSUE #2: Use position-based title mapping for consistency (no " - Today" suffix)
+            const audioItem = data.audio[i];
+            const displayName = ['Psalms', 'Proverbs', 'Song'][i] || (audioItem?.type || 'Unknown');
 
-            // Map type to display title
-            if (data.audio[i]) {
-              const audioItem = data.audio[i];
-              type = ['bible', 'prayer', 'quote'][i] as string;
-              title = ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
-              todayAudioFiles.push({
-                id: `${type}_${dateStr}_${i}`,
-                type: type,
-                subtitle: title + ' - Today',
-                url: audioItem?.url || '',
-                duration: audioItem?.duration || 0,
-                durationintime: audioItem ? this.audioCacheService.convertHMS(audioItem.duration) : '0:00',
-                state: 'pause',
-                ctime: 0,
-                ctimeintime: '0:00',
-                repeat_state: 0,
-                repeat_played_count: 0,
-              });
-            } else {
-              // Fallback for missing item in array
-              todayAudioFiles.push({
-                id: `${type}_${dateStr}_${i}`,
-                type: type,
-                subtitle: title + ' - Today',
-                url: '',
-                duration: 0,
-                durationintime: '0:00',
-                state: 'pause',
-                ctime: 0,
-                ctimeintime: '0:00',
-                repeat_state: 0,
-                repeat_played_count: 0,
-              });
-            }
+            todayAudioFiles.push({
+              id: `${displayName.toLowerCase()}_${dateStr}_${i}`,
+              type: displayName,
+              subtitle: displayName,  // Show only title without " - Today" suffix
+              url: audioItem?.url || '',
+              duration: audioItem?.duration || 0,
+              durationintime: audioItem ? this.audioCacheService.convertHMS(audioItem.duration) : '0:00',
+              state: 'pause',
+              ctime: 0,
+              ctimeintime: '0:00',
+              repeat_state: 0,
+              repeat_played_count: 0,
+            });
           }
           this.todayAudioFiles = todayAudioFiles;
           this.notificationsHomeCount = this.todayAudioFiles.length;
+
+          // ✅ FIX ISSUE #4: Set audio source binding for localStorage cache-loaded data
+          if (this.audioPlaybackService.audioPlaying && typeof this.audioPlaybackService.currentAudioIndex === 'number' && this.audioPlaybackService.currentAudioIndex < this.todayAudioFiles.length) {
+            this.selectedAudioSource = this.todayAudioFiles[this.audioPlaybackService.currentAudioIndex].url;
+          } else {
+            this.selectedAudioSource = '';
+          }
+
           // ✅ CRITICAL FIX: Reset loading flags when cache loads successfully
           this.isAudioLoading = false;
           this.audioLoadError = false;
@@ -817,7 +884,8 @@ export class HomePage {
         this.isAudioLoading = false;
         this.audioLoadError = true;
         this.audioLoadInProgress = false;
-        this.setStableErrorState(true, this.authservice.serverDownMessage);
+        const serverDownMessage = this.authservice?.serverDownMessage || 'Service temporarily not available. Please try again later.';
+        this.setStableErrorState(true, serverDownMessage);
       }
     }, 15000);
 
@@ -828,134 +896,115 @@ export class HomePage {
     ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const apiUrl = `https://api.viviliam.com/api/audio?date=${dateStr}`;
 
-    // Make API request
-    this.http.get(apiUrl).subscribe(
-      (data: any) => {
+    // Note: Using fetch instead of HTTP client for compatibility
+    fetch(apiUrl)
+      .then((response) => response.json())
+      .then((data: any) => {
         clearTimeout(audioLoadTimeout);
         this.audioLoadInProgress = false;
         // ✅ CRITICAL FIX: Reset loading flags on success
         this.isAudioLoading = false;
         this.audioLoadError = false;
         this.logger.log('Received audio data from API');
-        try {
-          const cacheEntry = { content: data, cacheDate: dateStr };
-          localStorage.setItem('todayAudioCache', JSON.stringify(cacheEntry));
-          // ✅ Convert raw API data to the expected array format for UI with correct titles
-          const todayAudioFiles: any[] = [];
-          if (data.audio && Array.isArray(data.audio)) {
-            for (let i = 0; i < Math.min(Math.max(data.audio.length, this.authservice.audio_bibles?.length || 0), 3); i++) {
-              let type = 'bible';
-              let title = 'Psalms';
 
-              // Map type to display title - USE API'S type field instead of position
-              const item = data.audio[i];
-              if (item) {
-                type = item.type || ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
-                title = type;  // Use same value for display
-              }
+        const cacheEntry = { content: data, cacheDate: dateStr };
+        localStorage.setItem('todayAudioCache', JSON.stringify(cacheEntry));
 
-              todayAudioFiles.push({
-                id: `${type}_${dateStr}_${i}`,
-                type: type,
-                subtitle: title + ' - Today',
-                url: item?.url || '',
-                duration: item?.duration || 0,
-                durationintime: item ? this.audioCacheService.convertHMS(item.duration) : '0:00',
-                state: 'pause',
-                ctime: 0,
-                ctimeintime: '0:00',
-                repeat_state: 0,
-                repeat_played_count: 0,
-              });
-            }
+        // ✅ Convert raw API data to the expected array format for UI with correct titles
+        const todayAudioFiles: any[] = [];
+        if (data.audio && Array.isArray(data.audio)) {
+          for (let i = 0; i < Math.min(Math.max(data.audio.length, this.authservice.audio_bibles?.length || 0), 3); i++) {
+            // ✅ FIX ISSUE #2: Use position-based title mapping for consistency (no " - Today" suffix)
+            const item = data.audio[i];
+            const displayName = ['Psalms', 'Proverbs', 'Song'][i] || (item?.type || 'Unknown');
+
+            todayAudioFiles.push({
+              id: `${displayName.toLowerCase()}_${dateStr}_${i}`,
+              type: displayName,
+              subtitle: displayName,  // Show only title without " - Today" suffix
+              url: item?.url || '',
+              duration: item?.duration || 0,
+              durationintime: item ? this.audioCacheService.convertHMS(item.duration) : '0:00',
+              state: 'pause',
+              ctime: 0,
+              ctimeintime: '0:00',
+              repeat_state: 0,
+              repeat_played_count: 0,
+            });
           }
-          this.todayAudioFiles = todayAudioFiles;
-          this.notificationsHomeCount = this.todayAudioFiles.length;
-          this.audioCacheService.processData(data);
-          this.setStableErrorState(false, '');
-        } catch (error) {
-          this.logger.error('Error processing API response:', error);
-          this.isAudioLoading = false;
-          this.audioLoadError = true;
-          this.setStableErrorState(true, this.authservice.serverDownMessage);
         }
-      },
-      (error) => {
+        this.todayAudioFiles = todayAudioFiles;
+        this.notificationsHomeCount = this.todayAudioFiles.length;
+
+        // ✅ FIX ISSUE #4: Set audio source binding for template reference
+        if (this.audioPlaybackService.audioPlaying && typeof this.audioPlaybackService.currentAudioIndex === 'number' && this.audioPlaybackService.currentAudioIndex < this.todayAudioFiles.length) {
+          this.selectedAudioSource = this.todayAudioFiles[this.audioPlaybackService.currentAudioIndex].url;
+        } else {
+          this.selectedAudioSource = '';
+        }
+
+        this.setStableErrorState(false, '');
+      })
+      .catch((error) => {
         clearTimeout(audioLoadTimeout);
-        this.audioLoadInProgress = false;
         this.logger.error('HTTP error:', error);
-        // Retry once for transient failures (short timeout to avoid long waits)
-        let retried = false;
-        const retry = () => {
-          if (retried) {
-            this.logger.log('Retry failed - falling back to cache');
-            this.isAudioLoading = false;
-            this.audioLoadError = true;
-            this.setStableErrorState(true, this.authservice.serverDownMessage);
-            this.tryLoadFromCache();
+
+        // Retry once for transient failures (short delay to avoid long waits)
+        const retrySchedule = setTimeout(async () => {
+          if (!this.isAudioLoading) {
             return;
           }
-          retried = true;
-          this.logger.log('Retrying API request...');
-          this.http.get(apiUrl).subscribe(
-            (retryData: any) => {
-              clearTimeout(audioLoadTimeout);
-              this.audioLoadInProgress = false;
-              this.logger.log('Retry succeeded - received audio data from API');
-              try {
-                const cacheEntry = { content: retryData, cacheDate: dateStr };
-                localStorage.setItem('todayAudioCache', JSON.stringify(cacheEntry));
-                // ✅ Convert raw API data to the expected array format for UI with correct titles
-                const todayAudioFiles: any[] = [];
-                if (retryData.audio && Array.isArray(retryData.audio)) {
-                  for (let i = 0; i < Math.min(Math.max(retryData.audio.length, this.authservice.audio_bibles?.length || 0), 3); i++) {
-                    let type = 'bible';
-                    let title = 'Psalms';
 
-                    // Map type to display title - USE API'S type field instead of position
-                    const item = retryData.audio[i];
-                    if (item) {
-                      type = item.type || ['Psalms', 'Proverbs', 'Song'][i] || 'Unknown';
-                      title = type;  // Use same value for display
-                    }
-
-                    todayAudioFiles.push({
-                      id: `${type}_${dateStr}_${i}`,
-                      type: type,
-                      subtitle: title + ' - Today',
-                      url: item?.url || '',
-                      duration: item?.duration || 0,
-                      durationintime: item ? this.audioCacheService.convertHMS(item.duration) : '0:00',
-                      state: 'pause',
-                      ctime: 0,
-                      ctimeintime: '0:00',
-                      repeat_state: 0,
-                      repeat_played_count: 0,
-                    });
-                  }
-                }
-                this.todayAudioFiles = todayAudioFiles;
-                this.notificationsHomeCount = this.todayAudioFiles.length;
-                this.audioCacheService.processData(retryData);
-                this.setStableErrorState(false, '');
-              } catch (retryError) {
-                this.logger.error('Error processing API response on retry:', retryError);
-                this.isAudioLoading = false;
-                this.audioLoadError = true;
-                this.setStableErrorState(true, this.authservice.serverDownMessage);
-              }
-            },
-            (retryError) => {
-              clearTimeout(audioLoadTimeout);
-              this.logger.error('Retry also failed:', retryError);
-              retried = false; // prevent infinite loops
-              retry(); // final fallback
+          try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
             }
-          );
-        };
-        retry();
-      }
-    );
+            const data = await response.json();
+
+            // Convert raw API data to the expected array format for UI with correct titles
+            const todayAudioFiles: any[] = [];
+            if (data.audio && Array.isArray(data.audio)) {
+              for (let i = 0; i < Math.min(Math.max(data.audio.length, this.authservice.audio_bibles?.length || 0), 3); i++) {
+                const item = data.audio[i];
+                const displayName = ['Psalms', 'Proverbs', 'Song'][i] || (item?.type || 'Unknown');
+
+                todayAudioFiles.push({
+                  id: `${displayName.toLowerCase()}_${dateStr}_${i}`,
+                  type: displayName,
+                  subtitle: displayName,
+                  url: item?.url || '',
+                  duration: item?.duration || 0,
+                  durationintime: item ? this.audioCacheService.convertHMS(item.duration) : '0:00',
+                  state: 'pause',
+                  ctime: 0,
+                  ctimeintime: '0:00',
+                  repeat_state: 0,
+                  repeat_played_count: 0,
+                });
+              }
+            }
+
+            this.todayAudioFiles = todayAudioFiles;
+            this.notificationsHomeCount = this.todayAudioFiles.length;
+
+            // ✅ FIX ISSUE #4: Set audio source binding for template reference (retry handler)
+            const currentAudioIndex = typeof this.audioPlaybackService.currentAudioIndex === 'number' && this.audioPlaybackService.currentAudioIndex < this.todayAudioFiles.length ? this.audioPlaybackService.currentAudioIndex : -1;
+            if (currentAudioIndex >= 0) {
+              this.selectedAudioSource = this.todayAudioFiles[currentAudioIndex].url;
+            } else {
+              this.selectedAudioSource = '';
+            }
+
+            this.setStableErrorState(false, '');
+          } catch (fetchError) {
+            this.logger.error('Fetch request failed:', fetchError);
+            this.audioLoadError = true;
+            const serverDownMessage = this.authservice?.serverDownMessage || 'Service temporarily not available. Please try again later.';
+            this.setStableErrorState(true, serverDownMessage);
+          }
+        }, 1000); // Short delay before retry
+      });
   }
 
 }

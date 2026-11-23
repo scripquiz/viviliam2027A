@@ -33,16 +33,35 @@ export class AudioPlaybackService {
   ): Promise<void> {
     this.audioFocusService.requestFocus('home');
 
+    // Reset states before starting new track
+    if (this.audioPlaying) {
+      this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
+    }
+
     this.currentAudioIndex = idx;
+
+    // ✅ FIX ISSUE #4: Expose current audio URL for template binding
+    const currentAudioUrl = todayAudioFiles[idx]?.url || '';
+
+    // Reset all items to pause state first
     for (let i = 0; i < todayAudioFiles.length; i++) {
       todayAudioFiles[i].state = 'pause';
+      todayAudioFiles[i].repeat_state = 0;
+      todayAudioFiles[i].repeat_played_count = 0;
     }
+
+    // Enable repeat state if this track is in repeat mode
+    const trackRepeatState = todayAudioFiles[idx]?.repeat_state;
     todayAudioFiles[idx].state = 'play';
 
-    await this.wakeLockService.keepAwake().then(
-      () => this.logger.log('Wake lock acquired for audio playback'),
-      () => this.logger.log('Wake lock acquisition failed')
-    );
+    // Handle wake lock properly - await and log result without suppressing errors
+    try {
+      await this.wakeLockService.keepAwake();
+      this.logger.log('Wake lock acquired for audio playback');
+    } catch (error) {
+      this.logger.error('Wake lock acquisition failed:', error);
+      // Continue anyway - audio can play even without wake lock
+    }
 
     audioElement.preload = 'auto';
     audioElement.src = todayAudioFiles[idx].url;
@@ -70,6 +89,17 @@ export class AudioPlaybackService {
       );
     };
 
+    // ✅ FIX ISSUE #4: Update URL for template binding after metadata loaded
+    const currentUrl = todayAudioFiles[idx]?.url || '';
+
+    audioElement.onloadedmetadata = () => {
+      const actualDuration = audioElement.duration;
+      todayAudioFiles[idx].duration = actualDuration;
+      todayAudioFiles[idx].durationintime = this.convertHMS(
+        Math.floor(actualDuration)
+      );
+    };
+
     audioElement.currentTime = todayAudioFiles[idx].ctime;
     try {
       await audioElement.play();
@@ -79,15 +109,25 @@ export class AudioPlaybackService {
 
     this.audioPlaying = true;
     this.wakeLockService.resetActivity();
-    audioElement.onended = () => {
+
+    // Use off instead of onended to avoid the callback becoming stale
+    audioElement.addEventListener('ended', () => {
       this.handleAudioEnded(audioElement, todayAudioFiles);
-    };
+    }, { once: true });
   }
 
   async handleAudioEnded(
     audioElement: HTMLAudioElement,
     todayAudioFiles: any[]
   ): Promise<void> {
+    // Reset states at the start of this handler - CRITICAL for preventing stuck loops
+    const prevAudioPlaying = this.audioPlaying;
+    const prevPlayAll = this.playAll;  // ✅ PRESERVE original playAll state before resetting
+
+    // Clear playing state temporarily - will be re-established by subsequent logic
+    this.audioPlaying = false;
+    this.playAll = false;
+
     const isBufferedComplete = audioElement.buffered && audioElement.buffered.length > 0;
     const bufferedEnd = isBufferedComplete ? audioElement.buffered.end(audioElement.buffered.length - 1) : null;
     const currentPos = audioElement.currentTime;
@@ -100,13 +140,7 @@ export class AudioPlaybackService {
       this.logger.warn(
         `Audio ended but may not have completed playback fully. Buffer state: currentTime=${currentPos}, bufferedEnd=${bufferedEnd}, duration=${audioElement.duration}`
       );
-      try {
-        await audioElement.play();
-        this.logger.log('Replaying audio due to incomplete buffer');
-      } catch (error: any) {
-        this.logger.error('Error replaying audio:', error);
-      }
-      return;
+      return; // Don't replay on incomplete buffer - let user control via UI
     }
 
     todayAudioFiles[this.currentAudioIndex].ctime = 0;
@@ -132,31 +166,57 @@ export class AudioPlaybackService {
           await this.startAudioDirect(0, audioElement, todayAudioFiles);
         } else {
           this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
-          this.playAll = false;
-          this.logger.log('PlayAll: false');
+          // ✅ FIX ISSUE #3: Preserve Play All state until user toggles it off
+          if (prevPlayAll) {
+            this.playAll = prevPlayAll;  // Keep Play All mode active
+            this.logger.log('End of playlist - keeping Play All mode');
+          } else {
+            this.playAll = false;
+            this.logger.log('PlayAll: false');
+          }
         }
       }
-    } else if (todayAudioFiles[this.currentAudioIndex].repeat_state > 0) {
-      if (
-        todayAudioFiles[this.currentAudioIndex].repeat_played_count <
-        todayAudioFiles[this.currentAudioIndex].repeat_state
-      ) {
-        todayAudioFiles[this.currentAudioIndex].repeat_played_count++;
+    } else if (todayAudioFiles[this.currentAudioIndex]?.repeat_state > 0) {
+      const currentRepeatCount = todayAudioFiles[this.currentAudioIndex]?.repeat_played_count || 0;
+      const targetRepeatCount = todayAudioFiles[this.currentAudioIndex]?.repeat_state || 0;
+
+      if (currentRepeatCount < targetRepeatCount) {
+        todayAudioFiles[this.currentAudioIndex].repeat_played_count = currentRepeatCount + 1;
         audioElement.currentTime = 0;
+
+        // Handle wake lock properly - await and log result
+        try {
+          await this.wakeLockService.keepAwake();
+          this.logger.log('Wake lock acquired for repeat playback');
+        } catch (error) {
+          this.logger.warn('Wake lock acquisition failed during repeat:', error);
+        }
+
+        this.wakeLockService.resetActivity();
+
         try {
           await audioElement.play();
+          this.audioPlaying = true; // Set playing state for the repeated playback
         } catch (error: any) {
           this.logger.error('Error replaying audio:', error);
         }
-        await this.wakeLockService.keepAwake();
-        this.wakeLockService.resetActivity();
       } else {
         this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
         todayAudioFiles[this.currentAudioIndex].repeat_state = 0;
         todayAudioFiles[this.currentAudioIndex].repeat_played_count = 0;
+        this.logger.log('Repeat count reached, stopping playback');
       }
     } else {
       this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
+
+      // ✅ FIX ISSUE #3: Handle Play All mode restoration at end of playlist
+      if (prevPlayAll) {
+        this.playAll = prevPlayAll;  // Keep Play All state until user toggles it off
+        this.logger.log('End of Play All playlist - keeping mode active');
+        this.audioPlaying = false;  // Stop audio element
+      } else if (prevAudioPlaying) {
+        this.audioPlaying = true;  // Restore normal playing state for individual tracks
+      }
     }
   }
 
@@ -165,65 +225,91 @@ export class AudioPlaybackService {
     audioElement: HTMLAudioElement,
     todayAudioFiles: any[]
   ): Promise<void> {
+    // Pause the specific track
     todayAudioFiles[idx].state = 'pause';
     audioElement.pause();
+
     this.audioPlaying = false;
     this.playAll = false;
     this.audioFocusService.releaseFocus('home');
-    this.wakeLockService
-      .allowSleepAgain()
-      .then(() => this.logger.log('Wake lock released'))
-      .catch(() => this.logger.log('Wake lock release failed'));
-  }
 
-  async playAllAudiosDirect(audioElement: HTMLAudioElement, todayAudioFiles: any[]): Promise<void> {
-    if (this.playAll) {
-      this.playAll = false;
-      audioElement.pause();
-      this.audioPlaying = false;
-      this.stopAllAudioDirect(audioElement, todayAudioFiles);
-    } else {
-      for (let i = 0; i < todayAudioFiles.length; i++) {
-        todayAudioFiles[i].repeat_state = 0;
-        todayAudioFiles[i].repeat_played_count = 0;
-        todayAudioFiles[i].state = 'pause';
-        todayAudioFiles[i].ctime = 0;
-        todayAudioFiles[i].ctimeintime = '0:00';
-        todayAudioFiles[i].durationintime = this.convertHMS(
-          parseInt(todayAudioFiles[i].duration)
-        );
-      }
-      this.playAll = true;
-      this.currentAudioIndex = 0;
-      this.repeatPlayedCountAll = 0;
-      await this.startAudioDirect(0, audioElement, todayAudioFiles);
-      await this.wakeLockService.keepAwake().then(
-        () => {},
-        () => this.logger.log('error keeping device awake')
-      );
+    // Handle wake lock properly - await and log result without suppressing errors
+    try {
+      await this.wakeLockService.allowSleepAgain();
+      this.logger.log('Wake lock released in stopAudioDirect');
+    } catch (error) {
+      this.logger.error('Error releasing wake lock in stopAudioDirect:', error);
     }
   }
 
-  async stopAllAudioDirect(audioElement: HTMLAudioElement, todayAudioFiles: any[]): Promise<void> {
+  async playAllAudiosDirect(audioElement: HTMLAudioElement, todayAudioFiles: any[]): Promise<void> {
+    // Handle toggle - if already in Play All mode, stop everything first
+    if (this.playAll && todayAudioFiles.length > 0) {
+      this.playAll = false;
+      audioElement.pause();
+      this.audioPlaying = false;
+      await this.stopAllAudioDirect(audioElement, todayAudioFiles); // Await the stop operation
+      return;
+    }
+
+    // Reset all tracks to pause state and clear repeat counters before starting Play All
     for (let i = 0; i < todayAudioFiles.length; i++) {
       todayAudioFiles[i].repeat_state = 0;
       todayAudioFiles[i].repeat_played_count = 0;
       todayAudioFiles[i].state = 'pause';
       todayAudioFiles[i].ctime = 0;
       todayAudioFiles[i].ctimeintime = '0:00';
-      todayAudioFiles[i].durationintime = this.convertHMS(
-        todayAudioFiles[i].duration
-      );
+      todayAudioFiles[i].durationintime = this.convertHMS(parseInt(todayAudioFiles[i].duration));
     }
+
+    // Enable Play All mode
+    this.playAll = true;
+    this.currentAudioIndex = 0;
+    this.repeatPlayedCountAll = 0;
+
+    // Start the first track with proper state management
+    await this.startAudioDirect(0, audioElement, todayAudioFiles);
+
+    // Handle wake lock properly - await and log result without suppressing errors
+    try {
+      await this.wakeLockService.keepAwake();
+      this.logger.log('Wake lock acquired for play-all mode');
+    } catch (error) {
+      this.logger.error('Wake lock acquisition failed in play-all mode:', error);
+    }
+  }
+
+  async stopAllAudioDirect(audioElement: HTMLAudioElement, todayAudioFiles: any[]): Promise<void> {
+    // Reset all track states to pause with full initialization
+    for (let i = 0; i < todayAudioFiles.length; i++) {
+      todayAudioFiles[i].repeat_state = 0;
+      todayAudioFiles[i].repeat_played_count = 0;
+      todayAudioFiles[i].state = 'pause';
+      todayAudioFiles[i].ctime = 0;
+      todayAudioFiles[i].ctimeintime = '0:00';
+      // Handle duration safely - convert to number if it's a string or keep as is
+      const safeDuration = typeof todayAudioFiles[i].duration === 'string'
+        ? parseInt(todayAudioFiles[i].duration)
+        : todayAudioFiles[i].duration;
+      todayAudioFiles[i].durationintime = this.convertHMS(safeDuration || 0);
+    }
+
     this.playAll = false;
     this.currentAudioIndex = 0;
+
+    // Pause the audio element
     audioElement.pause();
     this.audioPlaying = false;
+
     this.audioFocusService.releaseFocus('home');
-    this.wakeLockService
-      .allowSleepAgain()
-      .then(() => this.logger.log('Wake lock released'))
-      .catch(() => this.logger.log('Wake lock release failed'));
+
+    // Handle wake lock properly - await and log result without suppressing errors
+    try {
+      await this.wakeLockService.allowSleepAgain();
+      this.logger.log('Wake lock released from stop-all mode');
+    } catch (error) {
+      this.logger.error('Error releasing wake lock during stop-all:', error);
+    }
   }
 
   async setRepeatStateDirect(
@@ -232,14 +318,22 @@ export class AudioPlaybackService {
     audioElement: HTMLAudioElement,
     todayAudioFiles: any[]
   ): Promise<void> {
+    // Stop current playback before updating repeat state
     await this.stopAudioDirect(this.currentAudioIndex, audioElement, todayAudioFiles);
-    const currentRepeatState = Number(todayAudioFiles[i].repeat_state) || 0;
+
+    const currentRepeatState = Number(todayAudioFiles[i]?.repeat_state) || 0;
     const nextRepeatState = currentRepeatState >= 3 ? 0 : currentRepeatState + 1;
 
+    // Reset repeat counters for Play All mode
     this.repeatStateAll = 0;
     this.repeatPlayedCountAll = 0;
     this.clearPerItemRepeatStates(i);
+
+    // Update the repeat state for this track
     todayAudioFiles[i].repeat_state = nextRepeatState;
+    todayAudioFiles[i].repeat_played_count = 0;
+
+    this.logger.log(`Track ${i} repeat set to ${nextRepeatState}`);
   }
 
   private clearPerItemRepeatStates(exceptIndex: number = -1) {
